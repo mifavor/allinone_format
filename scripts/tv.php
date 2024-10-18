@@ -159,12 +159,20 @@ class M3uParser
                     }
                     break;
                 case "央视":
-                    if (stripos($item["id"], "cctv") !== false) {
+                    if (stripos($item["id"], "cctv") !== false || stripos($item["id"], "cgtn") !== false) {
                         $tmpChannelDesc = $item["id"];
+                        // $tmpChannelUrlInfo = preg_replace(['/' . $item['id'] . '-?/i', '/cctv-?\d+k?-?/i'], '', $item["desc"]);
+                        // if ($tmpChannelUrlInfo) {
+                        //     $item["url"] .= "$" .  $tmpChannelUrlInfo;
+                        // }
                     }
                     break;
                 case "卫视":
                     $tmpChannelDesc = $item["id"];
+                    // $tmpChannelUrlInfo = preg_replace('/' . $item['id'] . '-?/i', '', $item["desc"]);
+                    // if ($tmpChannelUrlInfo) {
+                    //     $item["url"] .= "$" .  $tmpChannelUrlInfo;
+                    // }
                     break;
                 case "咪咕":
                     $tmpChannelDesc = str_replace("咪咕视频-8M1080-", "", $item["desc"]);
