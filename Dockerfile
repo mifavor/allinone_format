@@ -2,8 +2,8 @@ FROM alpine:latest
 
 RUN apk add --no-cache php
 
-COPY scripts/ /opt/
+COPY tv.php/ /opt/
 
 EXPOSE 35456
 
-ENTRYPOINT ["/bin/sh", "/opt/start.sh"]
+ENTRYPOINT ["php", "-S", "0.0.0.0:35456", "-t", "/opt/"]
