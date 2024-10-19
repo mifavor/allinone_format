@@ -14,6 +14,12 @@ class M3uParser
      * @var int
      */
     private $dumpType = 0;
+
+    /**
+     * $selfJumpUrl - 跳转地址，默认为空
+     * @var string
+     */
+    private $selfJumpUrl = "";
     /**
      * $m3uFile - 存储m3u文件的URL地址
      * @var string
@@ -85,7 +91,7 @@ class M3uParser
      * @param string $allinone_host - 一体化服务器的主机名，用于构建m3u文件的URL
      * @param int $allinone_port - 一体化服务器的端口号，默认为35455，用于构建m3u文件的URL
      */
-    public function __construct($allinone_host, $allinone_port = 35455, $channel_merge = 0, $dump_type = 0)
+    public function __construct($allinone_host, $allinone_port = 35455, $channel_merge = 0, $dump_type = 0, $self_jump_url = "")
     {
         // 组合主机名和端口号来创建m3u文件的URL
         $this->m3uFile = "http://" . $allinone_host . ":" . $allinone_port . "/tv.m3u";
@@ -93,6 +99,8 @@ class M3uParser
         $this->channelMerge = $channel_merge;
         // 设置输出格式
         $this->dumpType = $dump_type;
+        // 设置跳转地址
+        $this->selfJumpUrl = $self_jump_url;
     }
 
     /**
@@ -168,32 +176,26 @@ class M3uParser
                     }
                     break;
                 case "央视":
-                    if ($this->dumpType == 1 && $this->channelMerge == 0) {
-                        $tmpChannelDesc = strtoupper($item["desc"]);
-                    } else {
+                    if ($this->channelMerge == 1) {
                         if (stripos($item["id"], "cctv") !== false || stripos($item["id"], "cgtn") !== false) {
                             $tmpChannelDesc = $item["id"];
                         }
+                        $tmpChannelUrlInfo = preg_replace(['/' . $item['id'] . '-?/i', '/cctv-?\d+k?-?/i'], '', $item["desc"]);
+                        if ($tmpChannelUrlInfo) {
+                            $item["url"] = sprintf("%s%s%s%s", $this->selfJumpUrl, urlencode($item["url"]), "$",  $tmpChannelUrlInfo);
+                        }
+                    } else {
+                        $tmpChannelDesc = strtoupper($item["desc"]);
                     }
-                    // if ($this->dumpType == 1 && $this->channelMerge) {
-                    //     $tmpChannelUrlInfo = preg_replace(['/' . $item['id'] . '-?/i', '/cctv-?\d+k?-?/i'], '', $item["desc"]);
-                    //     if ($tmpChannelUrlInfo) {
-                    //         $item["url"] .= "$" .  $tmpChannelUrlInfo;
-                    //     }
-                    // }
                     break;
                 case "卫视":
-                    if ($this->dumpType == 1 && $this->channelMerge == 0) {
-                        $tmpChannelDesc = strtoupper($item["desc"]);
-                    } else {
+                    if ($this->channelMerge == 1) {
                         $tmpChannelDesc = $item["id"];
+                        $tmpChannelUrlInfo = preg_replace('/' . $item['id'] . '-?/i', '', $item["desc"]);
+                        if ($tmpChannelUrlInfo) {
+                            $item["url"] = sprintf("%s%s%s%s", $this->selfJumpUrl, urlencode($item["url"]), "$",  $tmpChannelUrlInfo);
+                        }
                     }
-                    // if ($this->dumpType == 1 && $this->channelMerge) {
-                    //     $tmpChannelUrlInfo = preg_replace('/' . $item['id'] . '-?/i', '', $item["desc"]);
-                    //     if ($tmpChannelUrlInfo) {
-                    //         $item["url"] .= "$" .  $tmpChannelUrlInfo;
-                    //     }
-                    // }
                     break;
                 case "咪咕":
                     $tmpChannelDesc = str_replace("咪咕视频-8M1080-", "", $item["desc"]);
@@ -239,10 +241,7 @@ class M3uParser
                     }
                 }
                 foreach ($tmpM3uDataArrMerge as $item) {
-                    $str .= sprintf('#EXTINF:%s,tvg-id="%s" tvg-name="%s" tvg-logo="%s" group-title="%s",%s%s', $item["inf"], $item["id"], $item["id"], $item["logo"], $groupNew, $item["desc"], PHP_EOL);
-                    foreach ($item["url"] as $url) {
-                        $str .= $url . PHP_EOL;
-                    }
+                    $str .= sprintf('#EXTINF:%s,tvg-id="%s" tvg-name="%s" tvg-logo="%s" group-title="%s",%s%s%s%s', $item["inf"], $item["id"], $item["id"], $item["logo"], $groupNew, $item["desc"], PHP_EOL, implode(PHP_EOL, $item["url"]), PHP_EOL);
                 }
             } else {
                 if (isset($this->m3uDataArrFormat[$groupOld])) {
@@ -284,9 +283,7 @@ class M3uParser
                     }
                 }
                 foreach ($tmpM3uDataArrMerge as $item) {
-                    foreach ($item["url"] as $url) {
-                        $str .= sprintf("%s,%s%s", $item["desc"], $url, PHP_EOL);
-                    }
+                    $str .= sprintf("%s,%s%s", $item["desc"], implode("#", $item["url"]), PHP_EOL);
                 }
             } else {
                 foreach ($this->m3uDataArrFormat[$groupOld] as $item) {
@@ -315,6 +312,22 @@ class M3uParser
     }
 }
 
+/**
+ * $jump - 判断是否是需要跳转的链接
+ */
+$jump = (isset($_GET['j']) && $_GET["j"]) ? $_GET["j"] : '';
+if ($jump) {
+    $pos = strpos($jump, '$');
+    if ($pos !== false) {
+        $jump = substr($jump, 0, $pos);
+    }
+    $jump = urldecode($jump);
+    $jump = str_replace("&amp;", "&", $jump);
+    if ($jump) {
+        header("Location: $jump");
+        exit;
+    }
+}
 
 /**
  * $host - allinone服务器的主机名，默认为当前服务器的主机名
@@ -330,14 +343,18 @@ $port = (isset($_GET['p']) && $_GET["p"]) ? $_GET["p"] : 35455;
 /**
  * $merge - 是否合并频道，默认为0=不合并 1=合并
  */
-$merge = (isset($_GET['m']) && $_GET["m"] == 1) ? 1 : 0;
+$merge = (isset($_GET['m']) && $_GET["m"] == 0) ? 0 : 1;
 
 /**
  * $type - 输出类型 默认0=m3u 1=text
  */
 $type = (isset($_GET['t']) && $_GET["t"] == 1) ? 1 : 0;
+/**
+ * $selfJumpUrl - 本页面的URL，用于跳转至本页面
+ */
+$selfJumpUrl = sprintf("%s://%s%s?j=", (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on' && $_SERVER['SERVER_PORT'] == 443) ? 'https' : 'http', $_SERVER['HTTP_HOST'], $_SERVER['SCRIPT_NAME']);
 
-$m3uParser = new M3uParser($host, $port, $merge, $type);
+$m3uParser = new M3uParser($host, $port, $merge, $type, $selfJumpUrl);
 
 $m3uParser->getM3uData();
 $m3uParser->parseM3uDataToArray();
