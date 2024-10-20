@@ -24,7 +24,7 @@ http://192.168.31.50:35456/tv.php?h=192.168.31.50&p=35455&m=1&t=0
 
 ## 请求参数 (tptv.php 对 tptv.m3u 的二次处理结果)
 ```text
-http://内网IP:35456/tv.php?h=allinoneIP&p=allinoneHost&m=1&t=0
+http://内网IP:35456/tptv.php?h=allinoneIP&p=allinoneHost&t=0
 
 请求参数说明：
 h  可选参数  allinone 项目部署的内外网 IP或域名（不能使用 127.0.0.1），默认值 = 请求的内网IP
@@ -32,9 +32,9 @@ p  可选参数  allinone 项目部署的端口, 默认值 = 35455
 t  可选参数  输出格式 默认值 0=m3u， 1=text
 
 请求例子：
-http://192.168.31.50:35456/tv.php
+http://192.168.31.50:35456/tptv.php
 上面请求等同于
-http://192.168.31.50:35456/tv.php?h=192.168.31.50&p=35455&t=0
+http://192.168.31.50:35456/tptv.php?h=192.168.31.50&p=35455&t=0
 ```
 
 ## 项目源码(有 php-fpm 环境的可以直接运行源码中的 tv.php ):
