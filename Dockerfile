@@ -2,7 +2,7 @@ FROM alpine:latest
 
 RUN apk add --no-cache php
 
-COPY tv.php/ /opt/
+COPY tv.php tptv.php /opt/
 
 EXPOSE 35456
 
