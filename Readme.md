@@ -36,6 +36,18 @@ http://192.168.31.50:35456/tptv.php
 上面请求等同于
 http://192.168.31.50:35456/tptv.php?h=192.168.31.50&p=35455&t=0
 ```
+## 请求参数 (migu.php)
+```text
+http://内网IP:35456/migu.php?t=0
+
+请求参数说明：
+t  可选参数  输出格式 默认值 0=m3u， 1=text
+
+请求例子：
+http://192.168.31.50:35456/migu.php
+上面请求等同于
+http://192.168.31.50:35456/migu.php?t=0
+```
 
 ## 项目源码(有 php-fpm 环境的可以直接运行源码中的 tv.php ):
 [https://github.com/FanchangWang/allinone_format](https://github.com/FanchangWang/allinone_format)
