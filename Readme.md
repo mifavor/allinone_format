@@ -8,7 +8,7 @@ docker run -d --restart=always -p 35456:35456 --name allinone_format yuexuangu/a
 
 ## 请求参数 (tv.php 对 tv.m3u 的二次处理结果)
 ```text
-http://内网IP:35456/tv.php?h=allinoneIP&p=allinoneHost&m=1&t=0
+http://内网IP:35456/tv.php?h=allinoneIP&p=allinonePort&m=1&t=0
 
 请求参数说明：
 h  可选参数  allinone 项目部署的内外网 IP或域名（不能使用 127.0.0.1），默认值 = 请求的内网IP
@@ -24,7 +24,7 @@ http://192.168.31.50:35456/tv.php?h=192.168.31.50&p=35455&m=1&t=0
 
 ## 请求参数 (tptv.php 对 tptv.m3u 的二次处理结果)
 ```text
-http://内网IP:35456/tptv.php?h=allinoneIP&p=allinoneHost&t=0
+http://内网IP:35456/tptv.php?h=allinoneIP&p=allinonePort&t=0
 
 请求参数说明：
 h  可选参数  allinone 项目部署的内外网 IP或域名（不能使用 127.0.0.1），默认值 = 请求的内网IP
