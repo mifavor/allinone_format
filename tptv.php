@@ -100,7 +100,7 @@ class M3uParser
      */
     public function parseM3uDataToArray()
     {
-        $re = '/#EXTINF:(.+?),tvg-id="([^"]+)"\s+tvg-name="([^"]+)"\s+tvg-logo="([^"]+)"\s+group-title="([^"]+)",(.*)[\r\n]+((https?|rtmp):\/\/.*)[\r\n]+/';
+        $re = '/#EXTINF:(.+?)[,\s]+tvg-id="([^"]+)"\s+tvg-name="([^"]+)"\s+tvg-logo="([^"]+)"\s+group-title="([^"]+)",(.*)[\r\n]+((https?|rtmp):\/\/.*)[\r\n]+/';
         $m3uDataArrayCount = preg_match_all($re, $this->m3uData, $matches);
 
         $pattern = '/(' . implode('|', array_keys($this->channelDescReplace)) . ')/i';
