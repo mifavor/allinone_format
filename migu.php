@@ -139,7 +139,7 @@ class MiguParser
         $str = '#EXTM3U x-tvg-url="https://live.fanmingming.com/e.xml"' . PHP_EOL;
         foreach ($this->channelList as $group => $groupList) {
             foreach ($groupList as $channelId => $channelName) {
-                $str .= sprintf('#EXTINF:-1,tvg-id="%s" tvg-name="%s" tvg-logo="https://live.fanmingming.com/tv/%s.png" group-title="%s",%s%s%s%s%s', $channelName, $channelName, $channelName, $group, $channelName, PHP_EOL, $this->selfJumpUrl, $channelId, PHP_EOL);
+                $str .= sprintf('#EXTINF:-1 tvg-id="%s" tvg-name="%s" tvg-logo="https://live.fanmingming.com/tv/%s.png" group-title="%s",%s%s%s%s%s', $channelName, $channelName, $channelName, $group, $channelName, PHP_EOL, $this->selfJumpUrl, $channelId, PHP_EOL);
             }
         }
         return $str;

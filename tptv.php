@@ -178,7 +178,7 @@ class M3uParser
                 continue;
             }
             foreach ($this->m3uDataArrFormat[$groupOld] as $item) {
-                $str .= sprintf('#EXTINF:%s,tvg-id="%s" tvg-name="%s" tvg-logo="%s" group-title="%s",%s%s%s%s', $item["inf"], $item["id"], $item["id"], $item["logo"], $groupNew, $item["desc"], PHP_EOL, $item["url"], PHP_EOL);
+                $str .= sprintf('#EXTINF:%s tvg-id="%s" tvg-name="%s" tvg-logo="%s" group-title="%s",%s%s%s%s', $item["inf"], $item["id"], $item["id"], $item["logo"], $groupNew, $item["desc"], PHP_EOL, $item["url"], PHP_EOL);
             }
         }
         return $str;

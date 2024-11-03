@@ -241,12 +241,12 @@ class M3uParser
                     }
                 }
                 foreach ($tmpM3uDataArrMerge as $item) {
-                    $str .= sprintf('#EXTINF:%s,tvg-id="%s" tvg-name="%s" tvg-logo="%s" group-title="%s",%s%s%s%s', $item["inf"], $item["id"], $item["id"], $item["logo"], $groupNew, $item["desc"], PHP_EOL, implode(PHP_EOL, $item["url"]), PHP_EOL);
+                    $str .= sprintf('#EXTINF:%s tvg-id="%s" tvg-name="%s" tvg-logo="%s" group-title="%s",%s%s%s%s', $item["inf"], $item["id"], $item["id"], $item["logo"], $groupNew, $item["desc"], PHP_EOL, implode(PHP_EOL, $item["url"]), PHP_EOL);
                 }
             } else {
                 if (isset($this->m3uDataArrFormat[$groupOld])) {
                     foreach ($this->m3uDataArrFormat[$groupOld] as $item) {
-                        $str .= sprintf('#EXTINF:%s,tvg-id="%s" tvg-name="%s" tvg-logo="%s" group-title="%s",%s%s%s%s', $item["inf"], $item["id"], $item["id"], $item["logo"], $groupNew, $item["desc"], PHP_EOL, $item["url"], PHP_EOL);
+                        $str .= sprintf('#EXTINF:%s tvg-id="%s" tvg-name="%s" tvg-logo="%s" group-title="%s",%s%s%s%s', $item["inf"], $item["id"], $item["id"], $item["logo"], $groupNew, $item["desc"], PHP_EOL, $item["url"], PHP_EOL);
                     }
                 }
             }
