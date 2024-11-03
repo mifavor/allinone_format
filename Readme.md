@@ -57,6 +57,10 @@ http://192.168.31.50:35456/migu.php?t=0
 
 ## 更新日志
 ```text
+2024-11-3 12:26:27
+    - 修复 m3u 格式 #EXTINF:%s tvg-id= 。感谢 https://github.com/BenzLeung 的反馈。
+    - 新增 兼容肥羊#EXTINF:-1,tvg-id= 错误格式与 #EXTINF:-1 tvg-id= 正确格式。（提前修改，防止肥羊哪天修复后无法识别。）
+
 2024-10-20 23:50:01
     - 新增 tptv.php （对 tptv.m3u 的二次处理）
 
