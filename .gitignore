@@ -1,0 +1,30 @@
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Frontend
+frontend/dist/
+frontend/node_modules/
+frontend/.vite/
+frontend/coverage/
+frontend/.env
+frontend/.env.*
+
+# Server
+server/public/*
+!server/public/.gitkeep
+
+server/config/*
+!server/config/.gitkeep
+
+# PHP
+*.log
+.env
+.env.*
+vendor/
+
+# Docker
+.docker/ 

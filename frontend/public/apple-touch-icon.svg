@@ -1,0 +1,14 @@
+<svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景 -->
+    <rect width="180" height="180" fill="#FFFFFF"/>
+    <!-- 主图标圆形 -->
+    <circle cx="90" cy="90" r="70" fill="#1867C0"/>
+    <!-- TV 屏幕外框 -->
+    <rect x="45" y="45" width="90" height="65" rx="8" fill="white"/>
+    <!-- 分组线条 -->
+    <rect x="55" y="60" width="40" height="10" rx="5" fill="#1867C0"/>
+    <rect x="55" y="80" width="30" height="10" rx="5" fill="#1867C0"/>
+    <!-- 设置齿轮 -->
+    <circle cx="90" cy="120" r="15" fill="white"/>
+    <path d="M90 105l5 7l-10 15l-10-15l5-7h10z" fill="#1867C0"/>
+</svg> 
