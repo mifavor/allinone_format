@@ -23,6 +23,21 @@ docker run -d --restart=unless-stopped --net=host -v /path/to/config/:/app/confi
 
 ##########################
 #                        #
+#    docker-compose      #
+#                        #
+##########################
+version: '3'
+services:
+  allinone_format:
+    image: yuexuangu/allinone_format:latest
+    container_name: allinone_format
+    restart: unless-stopped
+    network_mode: host # openwrt 等系统可能需要此参数
+    volumes:
+      - /path/to/config/:/app/config/ # 请将 /path/to/config/ 改为你的配置文件存放目录
+
+##########################
+#                        #
 #      源码运行方式       #  
 #                        #
 ##########################
@@ -49,6 +64,9 @@ cd server && php -S 0.0.0.0:35456 index.php
     - 重构项目
     - 新增 配置管理页面
     - 优化 三种 m3u 输出格式 & 三种 txt 输出格式
+    - 开关 链接二次跳转或备注
+    - 开关 链接类型（比如排除 tptv 链接）
+    - 自由配置链接分组（可以自己重新设定频道分组）
 旧日志：
     请查看 deprecated/Readme.md
 ```
