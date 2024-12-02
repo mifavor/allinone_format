@@ -3,18 +3,6 @@ chcp 65001
 @echo off
 setlocal enabledelayedexpansion
 
-:: 将主要代码包装在错误处理块中
-call :main
-if errorlevel 1 (
-    echo.
-    echo 脚本执行出错！
-    pause
-    exit /b 1
-)
-pause
-exit /b 0
-
-:main
 title Docker 多架构镜像构建脚本
 
 :: 添加版本选择

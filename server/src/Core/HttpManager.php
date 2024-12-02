@@ -5,46 +5,19 @@ namespace Core;
 class HttpManager
 {
     private $logger;
-    private $timeout = 10;
+    private $connectTimeout = 2;
+    private $timeout = 3;
 
     public function __construct()
     {
-        $this->logger = LogManager::getInstance();
+        $this->logger = new LogManager();
     }
 
-    public function get($url)
+    public function fetchContent($url)
     {
         try {
             $this->logger->debug("Fetching URL: " . $url);
 
-            $context = stream_context_create([
-                'http' => [
-                    'timeout' => $this->timeout,
-                    'ignore_errors' => true
-                ],
-                'ssl' => [
-                    'verify_peer' => false,
-                    'verify_peer_name' => false
-                ]
-            ]);
-
-            $content = @file_get_contents($url, false, $context);
-            if ($content === false) {
-                $this->logger->debug("file_get_contents failed, trying curl");
-                return $this->getCurl($url);
-            }
-
-            $this->logger->debug("Successfully fetched URL");
-            return $content;
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
-            return false;
-        }
-    }
-
-    private function getCurl($url)
-    {
-        try {
             if (!function_exists('curl_init')) {
                 throw new \Exception('CURL is not installed');
             }
@@ -52,21 +25,62 @@ class HttpManager
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connectTimeout); // TCP 握手超时
+            curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout); // 整体请求超时
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
             $content = curl_exec($ch);
             $error = curl_error($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-
             if ($error) {
                 throw new \Exception('CURL Error: ' . $error);
             }
 
-            return $content;
+            if ($httpCode === 200 && $content) {
+                return $content;
+            }
+            return false;
         } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
+            $this->logger->error('Fetch content failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getBaseUrl()
+    {
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
+        $port = $_SERVER['SERVER_PORT'];
+        $isStandardPort = ($protocol === 'http' && $port == 80) ||
+            ($protocol === 'https' && $port == 443);
+        if (!strpos($host, ':')) {
+            $host = $isStandardPort ? $host : $host . ':' . $port;
+        }
+        return $protocol . '://' . $host;
+    }
+
+    public function detectTvM3uUrl(&$content = null)
+    {
+        try {
+            $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
+            $port = $_SERVER['SERVER_PORT'];
+
+            if ($port == '35456') {
+                $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+                $ip = explode(':', $host)[0];
+                $testUrl = "$protocol://$ip:35455/tv.m3u";
+                $this->logger->debug('尝试检测 tv.m3u url: ' . $testUrl);
+                $content = $this->fetchContent($testUrl);
+                if ($content && strpos($content, '#EXTM3U') !== false) {
+                    $this->logger->info('自动检测到 tv.m3u url: ' . $testUrl);
+                    return $testUrl;
+                }
+            }
+            return false;
+        } catch (\Exception $e) {
+            $this->logger->error('Detect tv.m3u url failed: ' . $e->getMessage());
             return false;
         }
     }

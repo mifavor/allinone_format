@@ -13,7 +13,7 @@ class OutputManager
     public function __construct()
     {
         $this->configManager = ConfigManager::getInstance();
-        $this->logger = LogManager::getInstance();
+        $this->logger = new LogManager();
         $this->httpManager = new HttpManager();
         $this->m3uParser = new M3uParser();
         $this->channelManager = new ChannelManager();
@@ -28,11 +28,22 @@ class OutputManager
     private function processM3uData($url)
     {
         if (empty($url)) {
-            throw new \Exception('请配置 tv.m3u 地址!');
-        }
-        $content = $this->httpManager->get($url);
-        if (!$content) {
-            throw new \Exception('获取tv.m3u内容失败 url: ' . $url);
+            $this->logger->debug('未配置 tv.m3u 地址,尝试自动检测');
+            $testUrl = $this->httpManager->detectTvM3uUrl($content);
+            if ($testUrl) {
+                $url = $testUrl;
+                // 更新配置
+                $config = $this->configManager->getConfig();
+                $config['tv_m3u_url'] = $url;
+                $this->configManager->updateConfig($config);
+            } else {
+                throw new \Exception('请配置 tv.m3u 地址!');
+            }
+        } else {
+            $content = $this->httpManager->fetchContent($url);
+            if (!$content) {
+                throw new \Exception('获取tv.m3u内容失败 url: ' . $url);
+            }
         }
 
         $m3uData = $this->m3uParser->parse($content);
@@ -50,7 +61,7 @@ class OutputManager
         if (strpos($url, '/tv.m3u') !== false && $this->configManager->getConfig()['link_type']['tptv']) {
             // 将 $url 中的 tv.m3u 替换成 tptv.m3u
             $url = str_replace('tv.m3u', 'tptv.m3u', $url);
-            $content = $this->httpManager->get($url);
+            $content = $this->httpManager->fetchContent($url);
             if (!$content) {
                 $this->logger->error('获取tptv.m3u内容失败 url: ' . $url);
             } else {
@@ -93,16 +104,7 @@ class OutputManager
             return $link . $newDesc;
         }
 
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
-        $port = $_SERVER['SERVER_PORT'];
-        $isStandardPort = ($protocol === 'http' && $port == 80) ||
-            ($protocol === 'https' && $port == 443);
-        if (!strpos($host, ':')) {
-            $host = $isStandardPort ? $host : $host . ':' . $port;
-        }
-        $baseUrl = $protocol . '://' . $host;
-        return $baseUrl . '/jump?url=' . urlencode($link) . $newDesc;
+        return $this->httpManager->getBaseUrl() . '/jump?url=' . urlencode($link) . $newDesc;
     }
 
     public function getM3uContent($format, $params)

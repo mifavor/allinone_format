@@ -101,7 +101,7 @@ class ChannelManager
     public function __construct()
     {
         $this->configManager = ConfigManager::getInstance();
-        $this->logger = LogManager::getInstance();
+        $this->logger = new LogManager();
     }
 
     public function format($m3uData)

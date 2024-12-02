@@ -9,7 +9,7 @@ class M3uParser
 
     public function __construct()
     {
-        $this->logger = LogManager::getInstance();
+        $this->logger = new LogManager();
     }
 
     public function parse($content)

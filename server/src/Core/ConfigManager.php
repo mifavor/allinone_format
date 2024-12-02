@@ -8,7 +8,7 @@ class ConfigManager
     private $logger;
     private $config;
     private $configFile;
-
+    private $httpManager;
     // 原始频道分组（不可变）
     private $originChannelGroup = [
         'CCTV48K',   // CCTV 4K/8K 频道
@@ -64,7 +64,8 @@ class ConfigManager
 
     private function __construct()
     {
-        $this->logger = LogManager::getInstance();
+        $this->logger = new LogManager();
+        $this->httpManager = new HttpManager();
         $this->configFile = dirname(dirname(__DIR__)) . '/config/config.json';
         $this->loadConfig();
     }
@@ -146,7 +147,6 @@ class ConfigManager
                     ];
                 }
 
-                $mappedGroups = [];
                 foreach ($config[$field] as $key => $groups) {
                     if (!is_string($key) || !is_array($groups)) {
                         return [
@@ -162,18 +162,7 @@ class ConfigManager
                                 'error' => "输出频道分组中存在未定义的原始频道分组: {$group}"
                             ];
                         }
-                        if (!in_array($group, $mappedGroups)) {
-                            $mappedGroups[] = $group;
-                        }
                     }
-                }
-
-                $unmappedGroups = array_diff($this->originChannelGroup, $mappedGroups);
-                if (!empty($unmappedGroups)) {
-                    return [
-                        'value' => $defaultValue,
-                        'error' => '存在未映射的原始频道分组: ' . implode(', ', $unmappedGroups)
-                    ];
                 }
                 break;
         }
@@ -243,6 +232,17 @@ class ConfigManager
 
         if (!empty($errors)) {
             throw new \Exception(implode("\n", $errors));
+        }
+        // 检查 tv_m3u_url 链接的 fetch 返回值是否包含 #EXTM3U
+        if (isset($validatedConfig['tv_m3u_url'])) {
+            $content = $this->httpManager->fetchContent($validatedConfig['tv_m3u_url']);
+            if ($content) {
+                if (strpos($content, '#EXTM3U') === false) {
+                    throw new \Exception('tv.m3u 地址返回内容不是 m3u 格式: ' . $validatedConfig['tv_m3u_url']);
+                }
+            } else {
+                throw new \Exception('tv.m3u 地址无法访问: ' . $validatedConfig['tv_m3u_url']);
+            }
         }
         $this->config = $validatedConfig;
         $this->saveConfig();

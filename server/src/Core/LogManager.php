@@ -4,23 +4,6 @@ namespace Core;
 
 class LogManager
 {
-    private static $instance = null;
-
-    private function __construct()
-    {
-        // 只配置日志输出到 stderr
-        ini_set('error_log', 'php://stderr');
-        ini_set('log_errors', 1);
-    }
-
-    public static function getInstance()
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
-
     private function log($message, $level)
     {
         $date = date('Y-m-d H:i:s');

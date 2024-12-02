@@ -8,19 +8,53 @@
             </v-btn>
         </v-app-bar>
 
-        <v-main>
+        <!-- 加载遮罩 -->
+        <v-overlay v-model="loading" class="align-center justify-center" persistent scrim="#666666">
+            <v-card class="pa-8" width="300">
+                <div class="text-center mb-4">
+                    <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+                </div>
+                <div class="text-h6 text-center">
+                    正在加载配置...
+                </div>
+            </v-card>
+        </v-overlay>
+
+        <!-- 内容区域 -->
+        <v-main v-if="!loading">
             <v-container>
                 <!-- M3U 地址配置 -->
                 <v-card class="mb-6">
-                    <v-card-title>配置 allinone tv.m3u 地址 *</v-card-title>
+                    <v-card-title>配置 allinone tv.m3u 订阅源 *</v-card-title>
                     <v-card-text>
+                        <div class="text-error text-h6 font-weight-bold mb-2">
+                            下面这个要配置的是 allinone tv.m3u 订阅源链接！
+                        </div>
                         <v-text-field ref="tvM3uUrlField" v-model="config.tv_m3u_url"
-                            placeholder="eg: http://192.168.31.50:35455/tv.m3u" variant="outlined" :rules="[
-                                v => !!v || 'tv.m3u 地址不能为空',
-                                v => /^https?:\/\/.+/i.test(v) || '请输入有效的 http/https 链接'
-                            ]" persistent-hint hint="必须是以 http:// 或 https:// 开头的链接"></v-text-field>
+                            placeholder="eg: http://192.168.31.50:35455/tv.m3u" variant="outlined"
+                            :rules="tvM3uUrlRules" persistent-hint hint="请在上面填写 allinone tv.m3u 订阅源"></v-text-field>
                     </v-card-text>
                 </v-card>
+
+                <!-- 确认对话框 -->
+                <v-dialog v-model="confirmDialog.show" persistent max-width="600">
+                    <v-card>
+                        <v-card-title class="text-warning text-h4 font-weight-bold">请仔细阅读！！！</v-card-title>
+                        <v-card-text class="text-error text-h6 font-weight-bold">
+                            当前配置的 allinone tv.m3u 订阅源未包含 /tv.m3u ！<br><br>
+                            请仔细查看配置的究竟对不对！！！<br><br>
+                            没问题就点 "确定"，有问题就点 "取消" 重新修改。
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn variant="outlined" @click="confirmDialog.show = false">取消</v-btn>
+                            <v-btn color="primary" variant="flat" :disabled="confirmDialog.countdown > 0"
+                                @click="handleConfirmSave">
+                                确定 {{ confirmDialog.countdown ? `(${confirmDialog.countdown}s)` : '' }}
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
 
                 <!-- 链接输出配置 -->
                 <v-card class="mb-6">
@@ -44,7 +78,7 @@
                 <!-- 频道链接格式 -->
                 <v-card class="mb-6">
                     <v-card-title class="d-flex align-center py-2">
-                        频道链接请求格式
+                        订阅源链接(这是配置到直播软件里用的！)
                         <v-spacer></v-spacer>
                         <v-btn icon color="primary" size="small" @click="expandUrls = !expandUrls">
                             <v-icon>{{ expandUrls ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
@@ -54,7 +88,7 @@
                         <v-card-text v-show="expandUrls" class="pa-2">
                             <v-row dense>
                                 <v-col v-for="(item, index) in channelUrls" :key="index" cols="12" :sm="6" :lg="4"
-                                    :xl="3" class="py-1">
+                                    class="py-1">
                                     <v-list-item class="url-item pa-2">
                                         <!-- 提示信息 -->
                                         <div class="d-flex align-center mb-1">
@@ -111,21 +145,26 @@
                     </v-card-title>
                     <v-card-text>
                         <!-- 原始频道分类（独立一行）-->
-                        <v-row v-if="unmappedChannels.length > 0">
+                        <v-row>
                             <v-col cols="12">
                                 <v-card>
-                                    <v-card-title class="d-flex align-center">
-                                        尚未分配的原始频道分类
+                                    <v-card-title class="d-flex text-warning align-center">
+                                        尚未分配或不想要的原始频道分类
                                         <v-spacer></v-spacer>
-                                        <v-btn icon color="warning" size="small" title="所有原始频道分类必须全部分配">
+                                        <v-btn icon color="warning" size="small" title="这些分类中的频道将被忽略">
                                             <v-icon>mdi-alert-circle</v-icon>
                                         </v-btn>
                                     </v-card-title>
                                     <v-card-text>
-                                        <draggable :model-value="unmappedChannels"
-                                            :group="{ name: 'channels', pull: 'clone', put: true }" item-key="name"
-                                            class="d-flex flex-wrap gap-2" ghost-class="ghost" @start="drag = true"
-                                            @end="drag = false" @add="handleChannelRemoved">
+                                        <draggable :model-value="unmappedChannels" :group="{
+                                            name: 'channels',
+                                            pull: 'clone',
+                                            put: function (to, from) {
+                                                // 只允许从 channels 组拖入
+                                                return from.options.group.name === 'channels';
+                                            }
+                                        }" item-key="name" class="d-flex flex-wrap gap-2" ghost-class="ghost"
+                                            @start="drag = true" @end="drag = false" @add="handleChannelRemoved">
                                             <template #item="{ element }">
                                                 <v-chip class="ma-2" color="primary" variant="outlined" draggable>
                                                     {{ element }}
@@ -143,7 +182,7 @@
                         <!-- 输出频道分类 -->
                         <draggable v-model="outputGroupOrder" item-key="name" handle=".group-drag-handle"
                             @start="groupDrag = true" @end="groupDrag = false" tag="div" class="v-row" :animation="200"
-                            :group="{ name: 'output-groups' }">
+                            :group="{ name: 'output-groups', pull: true, put: false }">
                             <template #item="{ element: name }">
                                 <v-col cols="12" :lg="6">
                                     <v-card>
@@ -154,7 +193,7 @@
 
                                             <!-- 分组标题（只读/编辑模式切换） -->
                                             <template v-if="editingGroup !== name">
-                                                <span class="text-truncate">{{ groupNames[name] }}</span>
+                                                <span class="text-truncate max-width-200">{{ groupNames[name] }}</span>
                                                 <v-icon class="ml-2" color="primary" size="small"
                                                     @click="startEdit(name)">
                                                     mdi-pencil
@@ -176,10 +215,15 @@
                                             </v-btn>
                                         </v-card-title>
                                         <v-card-text>
-                                            <draggable v-model="config.output_channel_group[name]"
-                                                :group="{ name: 'channels', pull: true, put: true }" item-key="name"
-                                                class="d-flex flex-wrap gap-2" ghost-class="ghost" :animation="200"
-                                                @start="drag = true" @end="drag = false"
+                                            <draggable v-model="config.output_channel_group[name]" :group="{
+                                                name: 'channels',
+                                                pull: true,
+                                                put: function (to, from) {
+                                                    // 只允许从 channels 组拖入
+                                                    return from.options.group.name === 'channels';
+                                                }
+                                            }" item-key="name" class="d-flex flex-wrap gap-2" ghost-class="ghost"
+                                                :animation="200" @start="drag = true" @end="drag = false"
                                                 @dragenter="dragEnterGroup = name" @dragleave="dragEnterGroup = null"
                                                 @drop="dragEnterGroup = null">
 
@@ -209,18 +253,6 @@
                     </v-btn>
                 </div>
 
-                <!-- 加载遮罩 -->
-                <v-overlay v-model="saving" class="align-center justify-center" persistent scrim="#666666">
-                    <v-card class="pa-8" width="300">
-                        <div class="text-center mb-4">
-                            <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
-                        </div>
-                        <div class="text-h6 text-center">
-                            正在保存配置...
-                        </div>
-                    </v-card>
-                </v-overlay>
-
                 <!-- 结果提示 -->
                 <v-dialog v-model="message.show" width="300" :persistent="false" :timeout="2000">
                     <v-alert :type="message.color === 'success' ? 'success' : 'error'" class="mb-0">
@@ -229,6 +261,18 @@
                 </v-dialog>
             </v-container>
         </v-main>
+
+        <!-- 保存遮罩 -->
+        <v-overlay v-model="saving" class="align-center justify-center" persistent scrim="#666666">
+            <v-card class="pa-8" width="300">
+                <div class="text-center mb-4">
+                    <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+                </div>
+                <div class="text-h6 text-center">
+                    正在保存配置...
+                </div>
+            </v-card>
+        </v-overlay>
 
         <!-- 添加频道对话框 -->
         <v-dialog v-model="dialog.show" max-width="500px">
@@ -271,7 +315,6 @@ export default {
         const saving = ref(false)
         const drag = ref(false)
         const editingGroup = ref(null)
-        const tempGroupName = ref('')
         const dragEnterGroup = ref(null)
         const groupNames = ref({})
         const message = ref({
@@ -289,25 +332,49 @@ export default {
         const channelUrls = ref([])
         const theme = useTheme()
         const tvM3uUrlField = ref(null)
+        const confirmDialog = ref({
+            show: false,
+            countdown: 5
+        })
+        let countdownTimer = null
+        const loading = ref(false)
+        const tvM3uUrlRules = [
+            v => !!v || 'allinone tv.m3u 订阅源必须设置',
+            v => /^https?:\/\/.+/i.test(v) || '请输入有效的 http/https 链接',
+            v => !v.includes(':35456') || '不能使用本服务的端口(35456)'
+        ]
 
         // 监听系统主题变化
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
 
         const updateTheme = (e) => {
-            theme.global.name.value = e.matches ? 'dark' : 'light'
+            const isDark = e.matches
+            theme.global.name.value = isDark ? 'dark' : 'light'
+            // 同步更新 html 类
+            document.documentElement.classList.toggle('dark', isDark)
         }
 
         // 初始化主题
-        onMounted(() => {
-            loadConfig()
-            loadChannelUrls()
+        onMounted(async () => {
             updateTheme(prefersDark)
             prefersDark.addEventListener('change', updateTheme)
+            loading.value = true
+            try {
+                await Promise.all([
+                    loadConfig(),
+                    loadChannelUrls()
+                ])
+            } finally {
+                loading.value = false
+            }
         })
 
         // 清理监听器
         onUnmounted(() => {
             prefersDark.removeEventListener('change', updateTheme)
+            if (countdownTimer) {
+                clearInterval(countdownTimer)
+            }
         })
 
         // 计算当前是否是暗色模式
@@ -399,6 +466,7 @@ export default {
         // 加载配置
         const loadConfig = async () => {
             try {
+                loading.value = true
                 const response = await axios.get('/api/config')
                 config.value = response.data
                 // 初始化分组名称
@@ -407,47 +475,74 @@ export default {
                 })
             } catch (error) {
                 showMessage('加载配置失败: ' + error.message, 'error')
+            } finally {
+                loading.value = false
             }
         }
 
         // 验证配置
         const validateConfig = () => {
-            // 验证 tv_m3u_url
-            if (!tvM3uUrlField.value.validate()) {
-                throw new Error('请检查 tv.m3u 地址配置')
-            }
-
-            // 验证链接类型配置
-            const enabledLinkTypes = Object.values(config.value.link_type).filter(enabled => enabled)
-            if (enabledLinkTypes.length === 0) {
-                throw new Error('至少需要启用一个直播源类型')
-            }
-
-            // 验证所原始分组都映射
-            const mappedGroups = new Set()
-            Object.values(config.value.output_channel_group).forEach(groups => {
-                groups.forEach(group => mappedGroups.add(group))
-            })
-            const unmapped = config.value.origin_channel_group.filter(group => !mappedGroups.has(group))
-            if (unmapped.length > 0) {
-                throw new Error(`以下原始频道分组未被映射: ${unmapped.join(', ')}`)
-            }
-
-            // 验证至少有一个输出分组
-            if (Object.keys(config.value.output_channel_group).length === 0) {
-                throw new Error('至少需要一个输出频道分组')
-            }
-
-            // 证每个输出分组至少包含一个原始分组
-            for (const [name, groups] of Object.entries(config.value.output_channel_group)) {
-                if (groups.length === 0) {
-                    throw new Error(`输出分组 "${name}" 至少需要包含一个原始频道分组`)
+            try {
+                // 验证 tv_m3u_url
+                if (!config.value.tv_m3u_url) {
+                    throw new Error('请检查 allinone tv.m3u 订阅源链接配置')
                 }
+                // 验证 URL 格式
+                if (!/^https?:\/\/.+/i.test(config.value.tv_m3u_url)) {
+                    throw new Error('请检查 allinone tv.m3u 订阅源链接配置')
+                }
+                // 验证端口
+                if (config.value.tv_m3u_url.includes(':35456')) {
+                    throw new Error('tv.m3u 地址不能使用本服务的端口(35456)')
+                }
+
+                // 验证链接类型配置
+                const enabledLinkTypes = Object.values(config.value.link_type).filter(enabled => enabled)
+                if (enabledLinkTypes.length === 0) {
+                    throw new Error('至少需要启用一个直播源类型')
+                }
+
+                // 验证至少有一个输出分组
+                if (Object.keys(config.value.output_channel_group).length === 0) {
+                    throw new Error('至少需要一个输出频道分组')
+                }
+
+                // 证每个输出分组至少包含一个原始分组
+                for (const [name, groups] of Object.entries(config.value.output_channel_group)) {
+                    if (groups.length === 0) {
+                        throw new Error(`输出分组 "${name}" 至少需要包含一个原始频道分组`)
+                    }
+                }
+            } catch (error) {
+                showMessage(error.message, 'error')
+                return false
             }
+            return true
         }
 
         // 保存配置
         const saveConfig = async () => {
+            try {
+                // 检查 tv.m3u 链接
+                if (!config.value.tv_m3u_url.endsWith('/tv.m3u')) {
+                    // 先验证配置
+                    validateConfig()
+                    confirmDialog.value.show = true
+                    startCountdown()
+                    return
+                }
+
+                await doSaveConfig()
+            } catch (error) {
+                showMessage(
+                    error.response?.data?.error || error.message || '保存失败',
+                    'error'
+                )
+            }
+        }
+
+        // 实际执行保存的方法
+        const doSaveConfig = async () => {
             try {
                 saving.value = true
                 validateConfig()
@@ -461,6 +556,12 @@ export default {
             } finally {
                 saving.value = false
             }
+        }
+
+        const handleConfirmSave = async () => {
+            confirmDialog.value.show = false
+            clearInterval(countdownTimer)
+            await doSaveConfig()
         }
 
         // 获取可用的频道分类（排除已被其他分组使用的）
@@ -555,9 +656,12 @@ export default {
         // 加载频道链接
         const loadChannelUrls = async () => {
             try {
+                loading.value = true
                 channelUrls.value = await getChannelUrls()
             } catch (error) {
                 showMessage(error.message, 'error')
+            } finally {
+                loading.value = false
             }
         }
 
@@ -580,6 +684,17 @@ export default {
             }
         })
 
+        const startCountdown = () => {
+            confirmDialog.value.countdown = 5
+            countdownTimer = setInterval(() => {
+                if (confirmDialog.value.countdown > 0) {
+                    confirmDialog.value.countdown--
+                } else {
+                    clearInterval(countdownTimer)
+                }
+            }, 1000)
+        }
+
         return {
             config,
             saving,
@@ -596,12 +711,8 @@ export default {
             deleteGroup,
             saveConfig,
             getAvailableChannels,
-            addChannelsToGroup,
             outputGroupOrder,
             groupDrag,
-            startEdit,
-            finishEdit,
-            cancelEdit,
             expandUrls,
             channelUrls,
             copyToClipboard,
@@ -609,7 +720,14 @@ export default {
             toggleTheme,
             tvM3uUrlField,
             linkTypeKeys,
-            isDark
+            isDark,
+            confirmDialog,
+            handleConfirmSave,
+            startCountdown,
+            doSaveConfig,
+            loading,
+            tvM3uUrlRules,
+            validateConfig
         }
     }
 }

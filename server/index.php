@@ -1,7 +1,9 @@
 <?php
 // 设置错误报告
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
+ini_set('error_log', 'php://stderr'); // 日志输出到 stderr
+ini_set('log_errors', 1); // 开启 error 日志记录
+ini_set('display_errors', 0); // 不显示错误
 
 // 设置时区
 date_default_timezone_set('Asia/Shanghai');

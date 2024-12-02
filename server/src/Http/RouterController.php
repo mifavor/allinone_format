@@ -11,7 +11,7 @@ class RouterController
 
     public function __construct()
     {
-        $this->logger = LogManager::getInstance();
+        $this->logger = new LogManager();
         // 注册 API 路由
         $this->routes['/api/config'] = [
             'GET' => [ApiController::class, 'getConfig'],

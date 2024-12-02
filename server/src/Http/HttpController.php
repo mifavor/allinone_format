@@ -12,7 +12,7 @@ class HttpController
 
     public function __construct()
     {
-        $this->logger = LogManager::getInstance();
+        $this->logger = new LogManager();
         $this->outputManager = new OutputManager();
     }
 

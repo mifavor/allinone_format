@@ -4,16 +4,19 @@ namespace Http;
 
 use Core\ConfigManager;
 use Core\LogManager;
+use Core\HttpManager;
 
 class ApiController
 {
     private $configManager;
     private $logger;
+    private $httpManager;
 
     public function __construct()
     {
         $this->configManager = ConfigManager::getInstance();
-        $this->logger = LogManager::getInstance();
+        $this->logger = new LogManager();
+        $this->httpManager = new HttpManager();
     }
 
     public function getConfig()
@@ -21,6 +24,13 @@ class ApiController
         try {
             $config = $this->configManager->getConfig();
             $config['origin_channel_group'] = $this->configManager->getOriginChannelGroup();
+            // 判断 $config['tv_m3u_url'] 如果为空就尝试检测
+            if (empty($config['tv_m3u_url'])) {
+                $testUrl = $this->httpManager->detectTvM3uUrl();
+                if ($testUrl) {
+                    $config['tv_m3u_url'] = $testUrl;
+                }
+            }
             $this->sendJsonResponse($config);
         } catch (\Exception $e) {
             $this->logger->error('Get config failed: ' . $e->getMessage());
@@ -53,34 +63,14 @@ class ApiController
     public function getChannelUrls()
     {
         try {
-            // 获取当前请求的协议
-            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-
-            // 获取当前请求的主机和端口
-            $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
-            $port = $_SERVER['SERVER_PORT'];
-
-            // 如果是标准端口，则不显示端口号
-            $isStandardPort = ($protocol === 'http' && $port == 80) ||
-                ($protocol === 'https' && $port == 443);
-
-            // 如果主机中已包含端口且不是标准端口，使用原始主机名
-            // 否则根据是否是标准端口决定是否添加端口号
-            if (!strpos($host, ':')) {
-                $host = $isStandardPort ? $host : $host . ':' . $port;
-            }
-
-            // 基础URL
-            $baseUrl = $protocol . '://' . $host;
+            $baseUrl = $this->httpManager->getBaseUrl();
 
             // 定义支持的格式
             $formats = [
-                '/m3u' => 'm3u 聚合格式 等同于 /m3u/1',
                 '/m3u/1' => 'm3u 聚合格式 1 适合 天光云影v3.x',
                 '/m3u/2' => 'm3u 聚合格式 2 适合 大部分播放器',
                 '/m3u/3' => 'm3u 普通格式',
 
-                '/txt' => 'txt 聚合格式 等同于 /txt/1',
                 '/txt/1' => 'txt 聚合格式 1',
                 '/txt/2' => 'txt 聚合格式 2',
                 '/txt/3' => 'txt 普通格式'

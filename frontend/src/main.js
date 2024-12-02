@@ -8,9 +8,7 @@ import {
     VAlert,
     VApp, VAppBar, VAppBarTitle,
     VBtn,
-    VCard,
-    VCardText,
-    VCardTitle,
+    VCard, VCardActions, VCardText, VCardTitle,
     VCheckbox,
     VChip,
     VCol,
@@ -24,6 +22,7 @@ import {
     VOverlay,
     VProgressCircular,
     VRow,
+    VScaleTransition,
     VSelect,
     VSnackbar,
     VSpacer,
@@ -42,6 +41,7 @@ const vuetify = createVuetify({
         VCard,
         VCardTitle,
         VCardText,
+        VCardActions,
         VTextField,
         VBtn,
         VSnackbar,
@@ -58,7 +58,8 @@ const vuetify = createVuetify({
         VOverlay,
         VProgressCircular,
         VAlert,
-        VExpandTransition
+        VExpandTransition,
+        VScaleTransition
     },
     icons: {
         defaultSet: 'mdi',
@@ -71,29 +72,8 @@ const vuetify = createVuetify({
         defaultTheme: 'light',
         themes: {
             light: {
-                dark: false,
                 colors: {
-                    background: '#FFFFFF',
-                    surface: '#FFFFFF',
                     primary: '#1867C0',
-                    secondary: '#5CBBF6',
-                    error: '#FF5252',
-                    info: '#2196F3',
-                    success: '#4CAF50',
-                    warning: '#FB8C00',
-                }
-            },
-            dark: {
-                dark: true,
-                colors: {
-                    background: '#121212',
-                    surface: '#212121',
-                    primary: '#2196F3',
-                    secondary: '#64B5F6',
-                    error: '#FF5252',
-                    info: '#2196F3',
-                    success: '#4CAF50',
-                    warning: '#FB8C00',
                 }
             }
         }
