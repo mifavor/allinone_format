@@ -52,9 +52,9 @@ cd server && php -S 0.0.0.0:35456 index.php
 
 ## 使用教程
 - 部署后访问配置页面：http://内网IP:35456/
-- 配置 allinone tv.m3u url 请求地址
-- 访问配置页面显示的频道链接（三种 m3u 格式, 三种 txt 格式），测试是否正常
-- 在播放器配置 m3u/txt 频道链接
+- 配置 allinone tv.m3u 订阅源。（如果是同 ip 下，会自动探测 http://内网IP:35455/tv.m3u ）
+- 复制订阅源链接（三种 m3u 格式, 三种 txt 格式）（可以在浏览器打开查看输出是否正常）
+- 在直播软件配置刚才复制的 m3u/txt 订阅源
 
 ## 配置管理
 ![配置管理](./images/config.jpeg)
