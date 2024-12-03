@@ -63,7 +63,7 @@ echo [7/9] 返回根目录...
 cd ..
 
 echo [8/9] 构建镜像...
-docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t yuexuangu/allinone_format:%TAG% .
+docker buildx build --pull --platform linux/amd64,linux/arm64,linux/arm/v7 -t yuexuangu/allinone_format:%TAG% .
 if errorlevel 1 (
     echo [错误] 镜像构建失败
     pause
