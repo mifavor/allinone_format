@@ -5,7 +5,7 @@
 请先安装此项目 [youshandefeiyang/allinone](https://hub.docker.com/r/youshandefeiyang/allinone)
 
 ## 项目源码
-[yuexuangu/allinone_format](https://github.com/yuexuangu/allinone_format)
+[allinone_format](https://github.com/FanchangWang/allinone_format)
 
 ## 运行方式：
 ```shell
@@ -67,6 +67,7 @@ cd server && php -S 0.0.0.0:35456 index.php
 2024-12-04 15:08:35
     - 修复 无法修改输出频道分组名
     - 修复 保存配置时表单校验失败依然弹出模态框提示
+
 2024-12-03 02:48:55
     - 修复 输出频道分组拖动位置bug
     - 新增 再同 ip/域名 下尝试自动探测 allinone tv.m3u 地址
