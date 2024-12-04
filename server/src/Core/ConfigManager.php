@@ -80,94 +80,85 @@ class ConfigManager
 
     private function validateField($config, $field, $defaultValue)
     {
+        $result = ['value' => $defaultValue, 'error' => null];
         if (!isset($config[$field])) {
-            return ['value' => $defaultValue, 'error' => null];
+            $result['error'] = "缺少 {$field} 配置";
+            return $result;
         }
 
         switch ($field) {
             case 'tv_m3u_url':
                 if (empty($config[$field])) {
-                    return [
-                        'value' => $defaultValue,
-                        'error' => 'tv.m3u 地址不能为空'
-                    ];
-                }
-                if (!filter_var($config[$field], FILTER_VALIDATE_URL)) {
-                    return [
-                        'value' => $defaultValue,
-                        'error' => 'tv.m3u 地址必须是有效的 URL'
-                    ];
-                }
-                if (!preg_match('/^https?:\/\//i', $config[$field])) {
-                    return [
-                        'value' => $defaultValue,
-                        'error' => 'tv.m3u 地址必须以 http:// 或 https:// 开头'
-                    ];
+                    $result['error'] = "{$field} 订阅源必须设置";
+                } elseif (!filter_var($config[$field], FILTER_VALIDATE_URL)) {
+                    $result['error'] = "{$field} 请输入有效的 http/https 链接";
+                } elseif (strpos($config[$field], ':35456') !== false) {
+                    $result['error'] = "{$field} 不能使用本服务的端口(35456)";
+                } else {
+                    $result['value'] = $config[$field];
                 }
                 break;
 
             case 'link_output_jump':
             case 'link_output_desc':
                 if (!is_bool($config[$field])) {
-                    return [
-                        'value' => $defaultValue,
-                        'error' => "{$field} 必须为布尔值"
-                    ];
+                    $result['error'] = "{$field} 配置格式错误";
+                } else {
+                    $result['value'] = $config[$field];
                 }
                 break;
 
             case 'link_type':
                 if (!is_array($config[$field])) {
-                    return [
-                        'value' => $defaultValue,
-                        'error' => 'link_type 配置格式错误，必须是对象'
-                    ];
-                }
-                $diff = array_diff(array_keys($config[$field]), $this->linkTypeKey);
-                if (!empty($diff)) {
-                    return [
-                        'value' => $defaultValue,
-                        'error' => 'link_type 配置中存在未定义的类型: ' . implode(', ', $diff)
-                    ];
-                }
-                $enabledTypes = array_filter($config[$field]);
-                if (empty($enabledTypes)) {
-                    return [
-                        'value' => $defaultValue,
-                        'error' => '至少需要启用一个直播源类型'
-                    ];
+                    $result['error'] = "{$field} 配置格式错误";
+                } elseif ($diff = array_diff(array_keys($config[$field]), $this->linkTypeKey)) {
+                    $result['error'] = "{$field} 配置中存在未定义的类型: " . implode(', ', $diff);
+                } else {
+                    $enabledTypes = array_filter($config[$field]);
+                    if (empty($enabledTypes)) {
+                        $result['error'] = "{$field} 至少需要启用一种直播源类型";
+                    } else {
+                        $result['value'] = $config[$field];
+                    }
                 }
                 break;
 
             case 'output_channel_group':
                 if (!is_array($config[$field])) {
-                    return [
-                        'value' => $defaultValue,
-                        'error' => 'output_channel_group 配置格式错误，必须是对象'
-                    ];
-                }
-
-                foreach ($config[$field] as $key => $groups) {
-                    if (!is_string($key) || !is_array($groups)) {
-                        return [
-                            'value' => $defaultValue,
-                            'error' => 'output_channel_group 配置格式错误，分组名必须是字符串，分组内容必须是数组'
-                        ];
-                    }
-
-                    foreach ($groups as $group) {
-                        if (!in_array($group, $this->originChannelGroup)) {
-                            return [
-                                'value' => $defaultValue,
-                                'error' => "输出频道分组中存在未定义的原始频道分组: {$group}"
-                            ];
+                    $result['error'] = "{$field} 配置格式错误";
+                } elseif (empty($config[$field])) {
+                    $result['error'] = "{$field} 至少需要创建一个分组";
+                } else {
+                    $groupNames = array_keys($config[$field]);
+                    if (count(array_unique($groupNames)) !== count($groupNames)) {
+                        $result['error'] = "{$field} 分组名称不能重复";
+                    } else {
+                        foreach ($config[$field] as $groupName => $channels) {
+                            // 检查每个分组是否至少包含一个原始频道分类
+                            if (empty($channels)) {
+                                $result['error'] = "{$field} 分组 \"{$groupName}\" 至少需要包含一个原始频道分类";
+                                break;
+                            }
+                            foreach ($channels as $channel) {
+                                // 检查每个频道是否在原始频道分类中
+                                if (!in_array($channel, $this->originChannelGroup)) {
+                                    $result['error'] = "{$field} 分组 \"{$groupName}\" 中的 \"{$channel}\" 不是原始频道分类";
+                                    break 2;
+                                }
+                            }
+                        }
+                        if (!$result['error']) {
+                            $result['value'] = $config[$field];
                         }
                     }
                 }
                 break;
+
+            default:
+                $result['value'] = $config[$field];
         }
 
-        return ['value' => $config[$field], 'error' => null];
+        return $result;
     }
 
     private function loadConfig()
@@ -216,40 +207,41 @@ class ConfigManager
 
     public function updateConfig($newConfig)
     {
-        $validatedConfig = [];
         $errors = [];
-        foreach ($this->defaultConfig as $field => $defaultValue) {
-            if (!isset($newConfig[$field])) {
-                $errors[] = "缺少 {$field} 配置";
+        // 只验证提交的字段
+        foreach ($newConfig as $field => $value) {
+            if (!isset($this->defaultConfig[$field])) {
+                $errors[] = "未知的配置项: {$field}";
                 continue;
             }
-            $result = $this->validateField($newConfig, $field, $defaultValue);
+            $result = $this->validateField($newConfig, $field, $this->defaultConfig[$field]);
             if ($result['error']) {
                 $errors[] = $result['error'];
+                continue;
             }
-            $validatedConfig[$field] = $result['value'];
+            // 更新配置
+            $this->config[$field] = $result['value'];
         }
 
+        // 如果有错误，抛出所有错误信息
         if (!empty($errors)) {
             throw new \Exception(implode("\n", $errors));
         }
-        // 检查 tv_m3u_url 链接的 fetch 返回值是否包含 #EXTM3U
-        if (isset($validatedConfig['tv_m3u_url'])) {
-            $content = $this->httpManager->fetchContent($validatedConfig['tv_m3u_url']);
+
+        // 如果更新了 tv_m3u_url，检查链接内容
+        if (isset($newConfig['tv_m3u_url'])) {
+            $content = $this->httpManager->fetchContent($newConfig['tv_m3u_url']);
             if ($content) {
                 if (strpos($content, '#EXTM3U') === false) {
-                    throw new \Exception('tv.m3u 地址返回内容不是 m3u 格式: ' . $validatedConfig['tv_m3u_url']);
+                    throw new \Exception('tv.m3u 地址返回内容不是 m3u 格式: ' . $newConfig['tv_m3u_url']);
                 }
             } else {
-                throw new \Exception('tv.m3u 地址无法访问: ' . $validatedConfig['tv_m3u_url']);
+                throw new \Exception('tv.m3u 地址无法访问: ' . $newConfig['tv_m3u_url']);
             }
         }
-        $this->config = $validatedConfig;
+
         $this->saveConfig();
-        return $this->config;
     }
-
-
 
     private function saveConfig()
     {

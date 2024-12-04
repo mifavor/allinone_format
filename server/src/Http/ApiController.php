@@ -47,15 +47,11 @@ class ApiController
             if (!$newConfig) {
                 throw new \Exception('Invalid JSON data');
             }
-            if (isset($newConfig['origin_channel_group'])) {
-                unset($newConfig['origin_channel_group']);
-            }
-            $config = $this->configManager->updateConfig($newConfig);
-            $this->logger->info('Config updated successfully');
-            $config['origin_channel_group'] = $this->configManager->getOriginChannelGroup();
-            $this->sendJsonResponse($config);
+            $this->configManager->updateConfig($newConfig);
+            $this->logger->info('配置更新成功');
+            $this->sendJsonResponse(["message" => "配置更新成功"]);
         } catch (\Exception $e) {
-            $this->logger->error('Update config failed: ' . $e->getMessage());
+            $this->logger->error('更新配置失败: ' . $e->getMessage());
             $this->sendJsonResponse(['error' => $e->getMessage()], 400);
         }
     }

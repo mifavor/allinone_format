@@ -1,0 +1,17 @@
+/* 拖拽相关样式 */
+.ghost {
+    opacity: 0.5;
+    background: #c8ebfb !important;
+}
+
+.group-drag-handle {
+    cursor: move;
+}
+
+/* 文本截断样式 */
+.text-truncate {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

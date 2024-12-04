@@ -24,9 +24,9 @@ export const updateConfig = async (config) => {
 
 export const getChannelUrls = async () => {
     try {
-        const response = await axios.get('/api/channel-urls')
+        const response = await api.get('/channel-urls')
         return response.data
     } catch (error) {
         throw new Error(error.response?.data?.error || '获取频道链接失败')
     }
-} 
+}
