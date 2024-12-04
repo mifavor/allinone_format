@@ -482,42 +482,36 @@ export default {
 
         // 验证配置
         const validateConfig = () => {
-            try {
-                // 验证 tv_m3u_url
-                if (!config.value.tv_m3u_url) {
-                    throw new Error('请检查 allinone tv.m3u 订阅源链接配置')
-                }
-                // 验证 URL 格式
-                if (!/^https?:\/\/.+/i.test(config.value.tv_m3u_url)) {
-                    throw new Error('请检查 allinone tv.m3u 订阅源链接配置')
-                }
-                // 验证端口
-                if (config.value.tv_m3u_url.includes(':35456')) {
-                    throw new Error('tv.m3u 地址不能使用本服务的端口(35456)')
-                }
-
-                // 验证链接类型配置
-                const enabledLinkTypes = Object.values(config.value.link_type).filter(enabled => enabled)
-                if (enabledLinkTypes.length === 0) {
-                    throw new Error('至少需要启用一个直播源类型')
-                }
-
-                // 验证至少有一个输出分组
-                if (Object.keys(config.value.output_channel_group).length === 0) {
-                    throw new Error('至少需要一个输出频道分组')
-                }
-
-                // 证每个输出分组至少包含一个原始分组
-                for (const [name, groups] of Object.entries(config.value.output_channel_group)) {
-                    if (groups.length === 0) {
-                        throw new Error(`输出分组 "${name}" 至少需要包含一个原始频道分组`)
-                    }
-                }
-            } catch (error) {
-                showMessage(error.message, 'error')
-                return false
+            // 验证 tv_m3u_url
+            if (!config.value.tv_m3u_url) {
+                throw new Error('请检查 allinone tv.m3u 订阅源链接配置')
             }
-            return true
+            // 验证 URL 格式
+            if (!/^https?:\/\/.+/i.test(config.value.tv_m3u_url)) {
+                throw new Error('请检查 allinone tv.m3u 订阅源链接配置')
+            }
+            // 验证端口
+            if (config.value.tv_m3u_url.includes(':35456')) {
+                throw new Error('tv.m3u 地址不能使用本服务的端口(35456)')
+            }
+
+            // 验证链接类型配置
+            const enabledLinkTypes = Object.values(config.value.link_type).filter(enabled => enabled)
+            if (enabledLinkTypes.length === 0) {
+                throw new Error('至少需要启用一个直播源类型')
+            }
+
+            // 验证至少有一个输出分组
+            if (Object.keys(config.value.output_channel_group).length === 0) {
+                throw new Error('至少需要一个输出频道分组')
+            }
+
+            // 证每个输出分组至少包含一个原始分组
+            for (const [name, groups] of Object.entries(config.value.output_channel_group)) {
+                if (groups.length === 0) {
+                    throw new Error(`输出分组 "${name}" 至少需要包含一个原始频道分组`)
+                }
+            }
         }
 
         // 保存配置
@@ -586,6 +580,9 @@ export default {
             }
             dialog.value.show = false
         }
+
+        // 临时存储编辑前的分组名称
+        const tempGroupName = ref('')
 
         // 开始编辑分组名称
         const startEdit = (groupName) => {
@@ -727,7 +724,11 @@ export default {
             doSaveConfig,
             loading,
             tvM3uUrlRules,
-            validateConfig
+            validateConfig,
+            startEdit,
+            finishEdit,
+            cancelEdit,
+            tempGroupName
         }
     }
 }
