@@ -81,8 +81,9 @@ class ConfigManager
     private function validateField($config, $field, $defaultValue)
     {
         $result = ['value' => $defaultValue, 'error' => null];
+        // 如果缺少配置，使用默认值。这个逻辑是为了兼容后续新增配置项
         if (!isset($config[$field])) {
-            $result['error'] = "缺少 {$field} 配置";
+            $this->logger->warning("缺少 {$field} 配置, 使用默认值");
             return $result;
         }
 
@@ -164,7 +165,7 @@ class ConfigManager
     private function loadConfig()
     {
         if (file_exists($this->configFile)) {
-            $content = file_get_contents($this->configFile);
+            $content = @file_get_contents($this->configFile);
             if ($content === false) {
                 @unlink($this->configFile);
                 $this->logger->error('无法读取 config.json 配置文件');
