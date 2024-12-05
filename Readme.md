@@ -1,5 +1,5 @@
 ## 功能简介：
-本项目是对 [youshandefeiyang/allinone](https://hub.docker.com/r/youshandefeiyang/allinone) /tv.m3u 和 /tptv.m3u 进行聚合 & 重新分组。
+本项目是对 [youshandefeiyang/allinone](https://hub.docker.com/r/youshandefeiyang/allinone) /tv.m3u、/tptv.m3u、/migu.m3u 进行聚合 & 重新分组。
 
 ## 前置项目
 请先安装此项目 [youshandefeiyang/allinone](https://hub.docker.com/r/youshandefeiyang/allinone)
