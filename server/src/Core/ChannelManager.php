@@ -300,6 +300,11 @@ class ChannelManager
             return '8K';
         }
 
+        // CCTV4欧洲和美洲 分类到 CGTN
+        if (strpos($desc, 'CCTV4欧洲') !== false || strpos($desc, 'CCTV4美洲') !== false) {
+            return 'CGTN';
+        }
+
         // CCTV
         if (preg_match('/cctv-?([1-9]\d?\+?)/i', $desc)) {
             return 'CCTV';
@@ -390,7 +395,6 @@ class ChannelManager
                         ]]
                     ];
                 }
-                break;
 
             case 'CCTV':
                 if (preg_match('/cctv-?([1-9]\d?\+?)/i', $desc, $matches)) {
@@ -408,7 +412,6 @@ class ChannelManager
                         ]]
                     ];
                 }
-                break;
 
             case 'CGTN':
                 if (preg_match('/cgtn([^-]*)/i', $desc, $matches)) {
@@ -425,7 +428,6 @@ class ChannelManager
                         ]]
                     ];
                 }
-                break;
 
             case '央视数字':
                 return [
@@ -460,7 +462,6 @@ class ChannelManager
                         ];
                     }
                 }
-                break;
 
             case '地方':
                 $extraDesc = '';
