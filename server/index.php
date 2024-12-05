@@ -37,9 +37,10 @@ $result = $router->dispatch($method, $path, $query);
 if ($result === false) {
     $file = __DIR__ . DIRECTORY_SEPARATOR . 'public' . $path;
 
-    // 默认访问 index.html
-    if ($path === '/') {
-        $file = rtrim($file, '/') . DIRECTORY_SEPARATOR . 'index.html';
+    // 默认访问 index.html 兼容前端路由
+    if (in_array($path, ['/', '/urls', '/basic', '/group'])) {
+        // 去掉 $file 中最后一个 / 以及后面所有字符。然后拼接 index.html
+        $file = substr($file, 0, strrpos($file, '/')) . DIRECTORY_SEPARATOR . 'index.html';
     }
     // 兼容 windows 路径
     $file = str_replace('/', DIRECTORY_SEPARATOR, $file);

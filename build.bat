@@ -10,14 +10,22 @@ echo 请选择要构建的版本:
 echo [1] latest (默认)
 echo [2] dev
 
-:: 提示用户输入选择，并提供默认选项
-set "TAG=latest"  :: 默认值为 'latest'
+:: 询问编译版本
+set "TAG=latest"
 set /p "userChoice=请输入选择 (直接回车选择默认 latest): "
 
 if "%userChoice%"=="2" set "TAG=dev"
 
+:: 询问是否推送镜像
+set "PUSH=Y"
+
+set /p "pushChoice=是否推送镜像? (直接回车推送, 输入 2 跳过): "
+if "%pushChoice%"=="2" set "PUSH=N"
+
+
 echo.
-echo 已选择版本: %TAG%
+echo 构建版本: %TAG%
+echo 推送镜像: %PUSH%
 echo 开始构建 - %date% %time%
 
 :: 编译前端代码
@@ -81,13 +89,6 @@ if errorlevel 1 (
 )
 
 echo [9/9] 推送镜像...
-set "PUSH=Y"  :: 默认所有情况下都设置为 Y
-
-set /p "pushChoice=是否推送镜像? (直接回车推送, 输入 2 跳过): "
-if "%TAG%"=="dev" (
-    if "%pushChoice%"=="2" set "PUSH=N"
-)
-
 if "%PUSH%"=="Y" (
     docker push yuexuangu/allinone_format:%TAG%
     if errorlevel 1 (

@@ -254,6 +254,12 @@ class ConfigManager
                         $result['error'] = "{$field} 分组名称不能重复";
                     } else {
                         foreach ($config[$field] as $groupName => $channels) {
+                            // 如果是对象格式，转换为数组
+                            if (is_object($channels) || (is_array($channels) && array_keys($channels) !== range(0, count($channels) - 1))) {
+                                $channels = array_values((array)$channels);
+                                $config[$field][$groupName] = $channels;
+                            }
+
                             // 删除分组中不是原始频道分类的频道
                             foreach ($channels as $idx => $channel) {
                                 if (!in_array($channel, $this->originChannelGroup)) {
@@ -261,6 +267,9 @@ class ConfigManager
                                     continue;
                                 }
                             }
+                            // 重新索引数组，确保是连续的数字索引
+                            $config[$field][$groupName] = array_values($config[$field][$groupName]);
+
                             // 分组下一个原始频道分类都没有就删除这个分组
                             if (empty($config[$field][$groupName])) {
                                 unset($config[$field][$groupName]);
