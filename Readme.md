@@ -60,7 +60,10 @@ cd server && php -S 0.0.0.0:35456 index.php
 - 在直播软件配置刚才复制的 m3u/txt 订阅源
 
 ## 配置管理
-![配置管理](./images/config.jpeg)
+![配置主页](./images/config1.png)
+![基础配置](./images/config2.png)
+![频道分组](./images/config3.png)
+![订阅链接](./images/config4.png)
 
 ## 更新日志
 ```text
