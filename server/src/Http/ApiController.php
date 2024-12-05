@@ -28,6 +28,9 @@ class ApiController
             if (empty($config['tv_m3u_url'])) {
                 $testUrl = $this->httpManager->detectTvM3uUrl();
                 if ($testUrl) {
+                    // 更新配置
+                    $this->logger->info('自动保存检测到的 tv.m3u url: ' . $testUrl);
+                    $this->configManager->updateConfig(['tv_m3u_url' => $testUrl]);
                     $config['tv_m3u_url'] = $testUrl;
                 }
             }

@@ -31,11 +31,10 @@ class OutputManager
             $this->logger->debug('未配置 tv.m3u 地址,尝试自动检测');
             $testUrl = $this->httpManager->detectTvM3uUrl($content);
             if ($testUrl) {
-                $url = $testUrl;
                 // 更新配置
-                $config = $this->configManager->getConfig();
-                $config['tv_m3u_url'] = $url;
-                $this->configManager->updateConfig($config);
+                $this->logger->info('自动保存检测到的 tv.m3u url: ' . $testUrl);
+                $this->configManager->updateConfig(['tv_m3u_url' => $testUrl]);
+                $url = $testUrl;
             } else {
                 throw new \Exception('请配置 tv.m3u 地址!');
             }
