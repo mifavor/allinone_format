@@ -32,10 +32,6 @@ class OutputManager
             $testUrl = $this->httpManager->detectTvM3uUrl($content);
             if ($testUrl) {
                 $url = $testUrl;
-                // 更新配置
-                $config = $this->configManager->getConfig();
-                $config['tv_m3u_url'] = $url;
-                $this->configManager->updateConfig($config);
             } else {
                 throw new \Exception('请配置 tv.m3u 地址!');
             }

@@ -4,12 +4,14 @@ namespace Core;
 
 class HttpManager
 {
+    private $configManager;
     private $logger;
     private $connectTimeout = 2;
     private $timeout = 3;
 
     public function __construct()
     {
+        $this->configManager = ConfigManager::getInstance();
         $this->logger = new LogManager();
     }
 
@@ -75,6 +77,8 @@ class HttpManager
                 $content = $this->fetchContent($testUrl);
                 if ($content && strpos($content, '#EXTM3U') !== false) {
                     $this->logger->info('自动检测到 tv.m3u url: ' . $testUrl);
+                    // 更新配置
+                    $this->configManager->updateConfig(['tv_m3u_url' => $testUrl]);
                     return $testUrl;
                 }
             }
