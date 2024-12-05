@@ -15,12 +15,12 @@
                 <v-card-text>
                     <!-- 原始频道分类（独立一行）-->
                     <v-row>
-                        <v-col cols="12">
+                        <v-col cols="12" :lg="6">
                             <v-card>
                                 <v-card-title class="d-flex text-warning align-center">
-                                    尚未分配或不想要的原始频道分类
+                                    未分配的原始频道分类
                                     <v-spacer></v-spacer>
-                                    <v-btn icon color="warning" size="small" title="这些分类中的频道将被忽略">
+                                    <v-btn icon color="warning" size="small" title="这些分类将组成 <其他频道>">
                                         <v-icon>mdi-alert-circle</v-icon>
                                     </v-btn>
                                 </v-card-title>
@@ -32,9 +32,40 @@
                                             return from.options.group.name === 'channels';
                                         }
                                     }" item-key="name" class="d-flex flex-wrap gap-2" ghost-class="ghost"
-                                        @start="drag = true" @end="drag = false" @add="handleChannelRemoved">
+                                        @start="drag = true" @end="drag = false" @add="handleChannelRemoved"
+                                        style="min-height: 50px;">
                                         <template #item="{ element }">
                                             <v-chip class="ma-2" color="primary" variant="outlined" draggable>
+                                                {{ element }}
+                                                <template v-slot:append>
+                                                    <v-icon>mdi-drag</v-icon>
+                                                </template>
+                                            </v-chip>
+                                        </template>
+                                    </draggable>
+                                </v-card-text>
+                            </v-card>
+                        </v-col>
+                        <v-col cols="12" :lg="6">
+                            <v-card>
+                                <v-card-title class="d-flex text-error align-center">
+                                    想删除的原始频道分类
+                                    <v-spacer></v-spacer>
+                                    <v-btn icon color="error" size="small" title="这些分类将被从输出结果中删除">
+                                        <v-icon>mdi-delete-forever</v-icon>
+                                    </v-btn>
+                                </v-card-title>
+                                <v-card-text>
+                                    <draggable v-model="config.deprecated_origin_channel_group" :group="{
+                                        name: 'channels',
+                                        pull: true,
+                                        put: function (to, from) {
+                                            return from.options.group.name === 'channels';
+                                        }
+                                    }" item-key="name" class="d-flex flex-wrap gap-2" ghost-class="ghost"
+                                        @start="drag = true" @end="drag = false" style="min-height: 50px;">
+                                        <template #item="{ element }">
+                                            <v-chip class="ma-2" color="error" variant="outlined" draggable>
                                                 {{ element }}
                                                 <template v-slot:append>
                                                     <v-icon>mdi-drag</v-icon>
@@ -170,6 +201,9 @@ export default {
             Object.values(props.config.output_channel_group).forEach(groups => {
                 groups.forEach(group => mappedGroups.add(group))
             })
+            props.config.deprecated_origin_channel_group.forEach(group => {
+                mappedGroups.add(group)
+            })
             return props.config.origin_channel_group.filter(group => !mappedGroups.has(group))
         })
 
@@ -269,7 +303,8 @@ export default {
                 saving.value = true
                 // 只提交本页面相关的配置
                 const configToSave = {
-                    output_channel_group: props.config.output_channel_group
+                    output_channel_group: props.config.output_channel_group,
+                    deprecated_origin_channel_group: props.config.deprecated_origin_channel_group
                 }
                 await updateConfig(configToSave)
                 emit('show-message', '配置保存成功', 'success')

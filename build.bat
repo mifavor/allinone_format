@@ -28,11 +28,21 @@ cd frontend || (
 )
 
 echo [2/9] 安装前端依赖...
-call npm install
-if errorlevel 1 (
-    echo [错误] npm install 失败
-    pause
-    exit /b 1
+:: 判断 node_modules 是否存在，不存在则安装，存在则 npm update
+if not exist "node_modules" (
+    call npm install
+    if errorlevel 1 (
+        echo [错误] npm install 失败
+        pause
+        exit /b 1
+    )
+) else (
+    call npm update
+    if errorlevel 1 (
+        echo [错误] npm update 失败
+        pause
+        exit /b 1
+    )
 )
 
 echo [3/9] 构建前端...
@@ -71,11 +81,22 @@ if errorlevel 1 (
 )
 
 echo [9/9] 推送镜像...
-docker push yuexuangu/allinone_format:%TAG%
-if errorlevel 1 (
-    echo [错误] 镜像推送失败
-    pause
-    exit /b 1
+set "PUSH=Y"  :: 默认所有情况下都设置为 Y
+
+set /p "pushChoice=是否推送镜像? (直接回车推送, 输入 2 跳过): "
+if "%TAG%"=="dev" (
+    if "%pushChoice%"=="2" set "PUSH=N"
+)
+
+if "%PUSH%"=="Y" (
+    docker push yuexuangu/allinone_format:%TAG%
+    if errorlevel 1 (
+        echo [错误] 镜像推送失败
+        pause
+        exit /b 1
+    )
+) else (
+    echo 跳过镜像推送
 )
 
 echo.

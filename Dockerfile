@@ -1,7 +1,11 @@
 FROM alpine:latest
 
-# 安装 PHP 和必要扩展
-RUN apk add --no-cache php php-curl
+# 安装 tzdata php php-curl
+RUN apk add --no-cache tzdata php php-curl
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # 设置工作目录
 WORKDIR /app

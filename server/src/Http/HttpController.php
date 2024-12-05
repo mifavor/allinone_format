@@ -2,16 +2,19 @@
 
 namespace Http;
 
+use Core\ConfigManager;
 use Core\LogManager;
 use Core\OutputManager;
 
 class HttpController
 {
+    private $configManager;
     private $logger;
     private $outputManager;
 
     public function __construct()
     {
+        $this->configManager = ConfigManager::getInstance();
         $this->logger = new LogManager();
         $this->outputManager = new OutputManager();
     }
@@ -94,5 +97,13 @@ class HttpController
             }
             echo 'Error: ' . $e->getMessage();
         }
+    }
+
+    public function debug()
+    {
+        $result = $this->outputManager->debugM3uData($_GET);
+        $result['config'] = $this->configManager->getConfig();
+
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
     }
 }

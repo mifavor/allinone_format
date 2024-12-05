@@ -33,6 +33,11 @@ class RouterController
         $this->routes['/jump'] = [
             'GET' => [HttpController::class, 'jump']
         ];
+
+        // 注册调试路由
+        $this->routes['/debug'] = [
+            'GET' => [HttpController::class, 'debug']
+        ];
     }
 
     public function dispatch($method, $path, $query)
