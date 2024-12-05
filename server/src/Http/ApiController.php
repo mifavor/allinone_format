@@ -23,6 +23,7 @@ class ApiController
     {
         try {
             $config = $this->configManager->getConfig();
+            $config['origin_channel_group'] = $this->configManager->getOriginChannelGroup();
             // 判断 $config['tv_m3u_url'] 如果为空就尝试检测
             if (empty($config['tv_m3u_url'])) {
                 $testUrl = $this->httpManager->detectTvM3uUrl();
@@ -30,7 +31,6 @@ class ApiController
                     $config['tv_m3u_url'] = $testUrl;
                 }
             }
-            $config['origin_channel_group'] = $this->configManager->getOriginChannelGroup();
             $this->sendJsonResponse($config);
         } catch (\Exception $e) {
             $this->logger->error('Get config failed: ' . $e->getMessage());
