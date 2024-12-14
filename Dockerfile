@@ -24,4 +24,4 @@ HEALTHCHECK --interval=30s --timeout=3s \
     CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:35456/favicon.ico || exit 1
 
 # 启动命令
-CMD ["php", "-S", "0.0.0.0:35456", "index.php"] 
+CMD ["php", "-S", "[::]:35456", "index.php"] 
