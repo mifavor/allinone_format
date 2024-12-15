@@ -50,9 +50,16 @@ class HttpManager
 
     public function getBaseUrl()
     {
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+        // 检查反向代理
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $protocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+            $port = $protocol == 'https' ? 443 : 80;
+        } else {
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+            $port = isset($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : ($protocol == 'https' ? 443 : 80);
+        }
+
         $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
-        $port = $_SERVER['SERVER_PORT'];
         $isStandardPort = ($protocol === 'http' && $port == 80) ||
             ($protocol === 'https' && $port == 443);
         if (!strpos($host, ':')) {
@@ -64,11 +71,17 @@ class HttpManager
     public function detectTvM3uUrl(&$content = null)
     {
         try {
+            // 检查反向代理
+            if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+                $protocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+                $port = $protocol == 'https' ? 443 : 80;
+            } else {
+                $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+                $port = isset($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : ($protocol == 'https' ? 443 : 80);
+            }
             $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
-            $port = $_SERVER['SERVER_PORT'];
 
             if ($port == '35456') {
-                $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
                 $ip = explode(':', $host)[0];
                 $testUrl = "$protocol://$ip:35455/tv.m3u";
                 $this->logger->debug('尝试检测 tv.m3u url: ' . $testUrl);

@@ -37,6 +37,7 @@ class ConfigManager
     // link_type 的 key 值
     private $linkTypeKey = [
         'ysptp',
+        'gaoma',
         'itv',
         'tptv',
         'migu',
@@ -57,6 +58,7 @@ class ConfigManager
         'link_output_desc' => true, // 是否输出频道描述
         'link_type' => [
             'ysptp' => true,      // 央视频道
+            'gaoma' => true,      // 高码频道
             'itv' => true,        // itv 频道
             'tptv' => true,       // tptv 频道
             'migu' => true,       // 咪咕频道
