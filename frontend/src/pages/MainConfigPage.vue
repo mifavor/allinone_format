@@ -7,8 +7,13 @@
             <v-card class="mb-6">
                 <v-card-title>配置 allinone tv.m3u 订阅源</v-card-title>
                 <v-card-text>
-                    <div class="text-error text-h6 font-weight-bold mb-2">
-                        下面这个要配置的是 allinone tv.m3u 订阅源链接！
+                    <div class="text-error mb-2">
+                        下面这个要配置的是 allinone tv.m3u 订阅源链接！<br>
+                        格式要求：<br>
+                        1、不能为空, 必须设置<br>
+                        2、必须是 http 或 https 协议<br>
+                        3、不能使用本服务的端口(35456)<br>
+                        4、支持带反向代理参数 url=https?://allinone代理域名[:端口]
                     </div>
                     <v-text-field ref="tvM3uUrlField" v-model="config.tv_m3u_url"
                         placeholder="eg: http://内网IP:35455/tv.m3u" variant="outlined" :rules="tvM3uUrlRules"
@@ -27,19 +32,19 @@
                 <v-card-text>
                     <v-row justify="center" class="gap-y-4">
                         <v-col cols="12" sm="auto">
-                            <v-btn color="primary" block @click="$router.push('/urls')">
+                            <v-btn color="primary" block @click="switchComponent('ChannelUrlsPage')">
                                 查看订阅源
                             </v-btn>
                         </v-col>
 
                         <v-col cols="12" sm="auto">
-                            <v-btn color="primary" block @click="$router.push('/basic')">
+                            <v-btn color="primary" block @click="switchComponent('BasicConfigPage')">
                                 基础配置
                             </v-btn>
                         </v-col>
 
                         <v-col cols="12" sm="auto">
-                            <v-btn color="primary" block @click="$router.push('/group')">
+                            <v-btn color="primary" block @click="switchComponent('GroupConfigPage')">
                                 分组配置
                             </v-btn>
                         </v-col>
@@ -94,13 +99,13 @@ export default {
             required: true
         }
     },
-    emits: ['show-basic-config', 'show-channel-urls', 'show-group-config', 'show-message'],
+    emits: ['show-basic-config', 'show-channel-urls', 'show-group-config', 'show-message', 'switch-component'],
     setup(props, { emit }) {
         const saving = ref(false)
         const tvM3uUrlField = ref(null)
         const tvM3uUrlRules = [
             v => !!v || 'allinone tv.m3u 订阅源必须设置',
-            v => /^https?:\/\/.+/i.test(v) || '请输入有效的 http/https 链接',
+            v => /^https?:\/\/.+/i.test(v) || '必须是 http 或 https 协议',
             v => !v.includes(':35456') || '不能使用本服务的端口(35456)'
         ]
 
@@ -112,14 +117,13 @@ export default {
 
         // 验证订阅源配置
         const validateConfig = () => {
-            if (!props.config.tv_m3u_url) {
-                throw new Error('allinone tv.m3u 订阅源必须设置')
-            }
-            if (!/^https?:\/\/.+/i.test(props.config.tv_m3u_url)) {
-                throw new Error('请输入有效的 http/https 链接')
-            }
-            if (props.config.tv_m3u_url.includes(':35456')) {
-                throw new Error('不能使用本服务的端口(35456)')
+            // 验证 tv_m3u_url
+            const tvM3uUrlErrors = tvM3uUrlRules
+                .map(rule => rule(props.config.tv_m3u_url))
+                .filter(result => result !== true); // 只保留错误消息
+
+            if (tvM3uUrlErrors.length > 0) {
+                throw new Error('tv.m3u 链接格式错误:\n' + tvM3uUrlErrors.join('\n')); // 抛出所有错误消息
             }
         }
 
@@ -172,13 +176,18 @@ export default {
             }
         }
 
+        const switchComponent = (componentName) => {
+            emit('switch-component', componentName);
+        };
+
         return {
             saving,
             tvM3uUrlField,
             tvM3uUrlRules,
             confirmDialog,
             handleConfirmDialog,
-            save
+            save,
+            switchComponent
         }
     }
 }

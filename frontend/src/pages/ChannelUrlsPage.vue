@@ -1,6 +1,6 @@
 <template>
     <div>
-        <app-header title="查看订阅源" :show-back="true" @back="$router.push('/')" />
+        <app-header title="查看订阅源" :show-back="true" @back="switchComponent('MainConfigPage')" />
 
         <v-container>
             <!-- 频道链接格式 -->
@@ -12,7 +12,7 @@
                 <v-expand-transition>
                     <v-card-text class="pa-2">
                         <v-row dense>
-                            <v-col v-for="(item, index) in channelUrls" :key="index" cols="12" class="py-1">
+                            <v-col v-for="(item, index) in channelUrls.urls" :key="index" cols="12" class="py-1">
                                 <v-card class="pa-2" variant="outlined">
                                     <!-- 提示信息 -->
                                     <div class="d-flex align-center mb-1">
@@ -24,12 +24,14 @@
 
                                     <!-- URL和复制按钮 -->
                                     <div class="d-flex align-center">
-                                        <span class="text-body-2">{{ item.url }}</span>
+                                        <span class="text-body-2">
+                                            {{ computedUrl(item.url) }}
+                                        </span>
                                         <div class="d-flex">
                                             <v-btn icon="mdi-content-copy" size="x-small" variant="text" class="ml-1"
-                                                title="复制链接" @click="copyToClipboard(item.url)"></v-btn>
+                                                title="复制链接" @click="copyToClipboard(computedUrl(item.url))"></v-btn>
                                             <v-btn icon="mdi-open-in-new" size="x-small" variant="text" class="ml-1"
-                                                title="在新窗口打开" @click="openInNewTab(item.url)"></v-btn>
+                                                title="在新窗口打开" @click="openInNewTab(computedUrl(item.url))"></v-btn>
                                         </div>
                                     </div>
                                 </v-card>
@@ -52,11 +54,15 @@ export default {
     },
     props: {
         channelUrls: {
-            type: Array,
+            type: Object,
+            required: true
+        },
+        config: {
+            type: Object,
             required: true
         }
     },
-    emits: ['back', 'show-message'],
+    emits: ['show-message', 'switch-component'],
     setup(props, { emit }) {
         const copyToClipboard = async (text) => {
             try {
@@ -92,9 +98,21 @@ export default {
             window.open(url, '_blank')
         }
 
+        // 计算属性，用于生成完整的 URL
+        const computedUrl = (url) => {
+            const baseUrl = props.config.reverse_proxy_domain || props.channelUrls.base_url;
+            return `${baseUrl}${url}`;
+        }
+
+        const switchComponent = (componentName) => {
+            emit('switch-component', componentName);
+        };
+
         return {
             copyToClipboard,
-            openInNewTab
+            openInNewTab,
+            computedUrl,
+            switchComponent
         }
     }
 }

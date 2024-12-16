@@ -53,7 +53,8 @@ class HttpManager
         // 检查反向代理
         if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
             $protocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
-            $port = $protocol == 'https' ? 443 : 80;
+
+            $port = isset($_SERVER['HTTP_X_FORWARDED_PORT']) ? explode(',', $_SERVER['HTTP_X_FORWARDED_PORT'])[0] : ($protocol == 'https' ? 443 : 80);
         } else {
             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
             $port = isset($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : ($protocol == 'https' ? 443 : 80);
@@ -74,7 +75,7 @@ class HttpManager
             // 检查反向代理
             if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
                 $protocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
-                $port = $protocol == 'https' ? 443 : 80;
+                $port = isset($_SERVER['HTTP_X_FORWARDED_PORT']) ? explode(',', $_SERVER['HTTP_X_FORWARDED_PORT'])[0] : ($protocol == 'https' ? 443 : 80);
             } else {
                 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
                 $port = isset($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : ($protocol == 'https' ? 443 : 80);

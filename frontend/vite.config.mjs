@@ -8,7 +8,7 @@ export default defineConfig({
         {
             name: 'copy-to-public',
             closeBundle: async () => {
-                await fs.ensureDir('../server/public')
+                await fs.emptyDir('../server/public')
                 await fs.copy('dist', '../server/public', { overwrite: true })
                 console.log('Files copied to server/public successfully!')
             }

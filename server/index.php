@@ -24,48 +24,18 @@ $request_uri = $_SERVER['REQUEST_URI'];
 $path = parse_url($request_uri, PHP_URL_PATH);
 $query = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
 
-// 如果是 /tv.php 或 /tptv.php，交给 PHP 内置服务器处理
-if (in_array($path, ['/tv.php', '/tptv.php'])) {
-    return false;
-}
-
 // 尝试路由处理
 $router = new Http\RouterController();
 $result = $router->dispatch($method, $path, $query);
 
 // 如果路由处理返回 false，则尝试处理静态文件
 if ($result === false) {
-    $file = __DIR__ . DIRECTORY_SEPARATOR . 'public' . $path;
-
-    // 默认访问 index.html 兼容前端路由
-    if (in_array($path, ['/', '/urls', '/basic', '/group'])) {
-        // 去掉 $file 中最后一个 / 以及后面所有字符。然后拼接 index.html
-        $file = substr($file, 0, strrpos($file, '/')) . DIRECTORY_SEPARATOR . 'index.html';
-    }
-    // 兼容 windows 路径
-    $file = str_replace('/', DIRECTORY_SEPARATOR, $file);
-
-    if (file_exists($file)) {
-        $ext = pathinfo($file, PATHINFO_EXTENSION);
-        $mime_types = [
-            'html' => 'text/html',
-            'css' => 'text/css',
-            'js' => 'application/javascript',
-            'png' => 'image/png',
-            'jpg' => 'image/jpeg',
-            'gif' => 'image/gif',
-            'svg' => 'image/svg+xml',
-            'ico' => 'image/x-icon',
-            'json' => 'application/json'
-        ];
-
-        if (isset($mime_types[$ext])) {
-            header('Content-Type: ' . $mime_types[$ext]);
-            header('Content-Length: ' . filesize($file));
-        }
+    if ($path === '/') {
+        $file = __DIR__ . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'index.html';
+        header('Content-Type: text/html');
+        header('Content-Length: ' . filesize($file));
         readfile($file);
     } else {
-        header('HTTP/1.1 404 Not Found');
-        echo '404 Not Found';
+        return false;
     }
 }

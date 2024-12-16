@@ -29,13 +29,13 @@ echo 推送镜像: %PUSH%
 echo 开始构建 - %date% %time%
 
 :: 编译前端代码
-echo [1/9] 进入前端目录...
+echo [1/10] 进入前端目录...
 cd frontend || (
     echo [错误] 找不到前端目录
     exit /b 1
 )
 
-echo [2/9] 安装前端依赖...
+echo [2/10] 安装前端依赖...
 :: 判断 node_modules 是否存在，不存在则安装，存在则 npm update
 if not exist "node_modules" (
     call npm install
@@ -53,7 +53,7 @@ if not exist "node_modules" (
     )
 )
 
-echo [3/9] 构建前端...
+echo [3/10] 构建前端...
 call npm run build
 if errorlevel 1 (
     echo [错误] npm build 失败
@@ -61,13 +61,16 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [4/9] 返回根目录...
+echo [4/10] 返回根目录...
 cd ..
 
-echo [5/9] 进入后端目录...
+echo [5/10] 复制旧版 tv.php tpt.php 到 public/...
+copy deprecated/*.php public/
+
+echo [6/10] 进入后端目录...
 cd server
 
-echo [6/9] 清理配置文件...
+echo [7/10] 清理配置文件...
 if exist "config\*" (
     echo 正在清理配置文件...
     del /q "config\*.*" 2>nul || (
@@ -77,10 +80,10 @@ if exist "config\*" (
     )
 )
 
-echo [7/9] 返回根目录...
+echo [8/10] 返回根目录...
 cd ..
 
-echo [8/9] 构建镜像...
+echo [9/10] 构建镜像...
 docker buildx build --pull --platform linux/amd64,linux/arm64,linux/arm/v7 -t yuexuangu/allinone_format:%TAG% .
 if errorlevel 1 (
     echo [错误] 镜像构建失败
@@ -88,7 +91,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [9/9] 推送镜像...
+echo [10/10] 推送镜像...
 if "%PUSH%"=="Y" (
     docker push yuexuangu/allinone_format:%TAG%
     if errorlevel 1 (

@@ -16,9 +16,8 @@
 
         <!-- 内容区域 -->
         <v-main v-if="!loading">
-            <router-view v-slot="{ Component }">
-                <component :is="Component" :config="config" :channel-urls="channelUrls" @show-message="showMessage" />
-            </router-view>
+            <component :is="currentComponent" :config="config" :channel-urls="channelUrls" @show-message="showMessage"
+                @switch-component="switchComponent" />
         </v-main>
     </v-app>
 </template>
@@ -27,11 +26,19 @@
 import { onMounted, ref } from 'vue';
 import { getChannelUrls, getConfig } from './api';
 import MessageDialog from './components/MessageDialog.vue';
+import BasicConfigPage from './pages/BasicConfigPage.vue'; // 导入需要的页面组件
+import ChannelUrlsPage from './pages/ChannelUrlsPage.vue'; // 导入需要的页面组件
+import GroupConfigPage from './pages/GroupConfigPage.vue'; // 导入需要的页面组件
+import MainConfigPage from './pages/MainConfigPage.vue'; // 导入需要的页面组件
 
 export default {
     name: 'App',
     components: {
-        MessageDialog
+        MessageDialog,
+        ChannelUrlsPage,
+        MainConfigPage,
+        BasicConfigPage,
+        GroupConfigPage
     },
     setup() {
         const config = ref({
@@ -41,55 +48,63 @@ export default {
             link_type: {},
             origin_channel_group: [],
             output_channel_group: {}
-        })
-        const loading = ref(false)
-        const channelUrls = ref([])
-        const messageDialog = ref(null)
+        });
+        const loading = ref(false);
+        const channelUrls = ref([]);
+        const messageDialog = ref(null);
+        const currentComponent = ref('MainConfigPage'); // 设置默认显示的组件为 MainConfigPage
 
         // 初始化主题
         onMounted(async () => {
-            loading.value = true
+            loading.value = true;
             try {
                 await Promise.all([
                     loadConfig(),
                     loadChannelUrls()
-                ])
+                ]);
             } finally {
-                loading.value = false
+                loading.value = false;
             }
-        })
+        });
 
         const showMessage = (text, type = 'success') => {
             if (messageDialog.value) {
-                messageDialog.value.showMessage(text, type)
+                messageDialog.value.showMessage(text, type);
             }
-        }
+        };
 
         // 加载配置
         const loadConfig = async () => {
             try {
-                config.value = await getConfig()
+                config.value = await getConfig();
             } catch (error) {
-                showMessage('加载配置失败: ' + error.message, 'error')
+                showMessage('加载配置失败: ' + error.message, 'error');
             }
-        }
+        };
 
         // 加载频道链接
         const loadChannelUrls = async () => {
             try {
-                channelUrls.value = await getChannelUrls()
+                channelUrls.value = await getChannelUrls();
             } catch (error) {
-                showMessage(error.message, 'error')
+                showMessage(error.message, 'error');
             }
-        }
+        };
+
+        // 切换组件
+        const switchComponent = (componentName) => {
+            currentComponent.value = componentName;
+        };
 
         return {
             config,
             loading,
             channelUrls,
             messageDialog,
-            showMessage
-        }
+            showMessage,
+            currentComponent,
+            switchComponent // 返回切换组件的方法
+        };
     }
 }
 </script>

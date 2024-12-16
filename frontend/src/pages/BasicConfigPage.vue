@@ -1,6 +1,6 @@
 <template>
     <div>
-        <app-header title="基础配置" :show-back="true" @back="$router.push('/')" />
+        <app-header title="基础配置" :show-back="true" @back="switchComponent('MainConfigPage')" />
 
         <v-container>
             <!-- 请求内容配置 -->
@@ -97,6 +97,27 @@
                 </v-card-text>
             </v-card>
 
+            <!-- 反向代理域名配置 -->
+            <v-card class="mb-6">
+                <v-card-title>allinone_format 反向代理域名配置</v-card-title>
+                <v-card-text>
+                    <div class="text-warning mb-2">
+                        不使用反向代理请留空！<br>
+                        下面这个配置的是 allinone_format 的反向代理域名！<br>
+                        不是 allinone 的反向代理域名！<br>
+                        格式要求：<br>
+                        1、必须是 http 或 https 协议<br>
+                        2、不能带 ?xx=xx 参数<br>
+                        3、不能以 / 结尾, 如果是 / 结束的请删除最后的 /<br>
+                        4、如果带 /path 那需要在 nginx 转发的时候动态删除
+                    </div>
+                    <v-text-field ref="reverseProxyDomainField" v-model="config.reverse_proxy_domain"
+                        placeholder="eg: https?://域名[:端口][/path]" variant="outlined" :rules="reverseProxyDomainRules"
+                        persistent-hint hint="请在上面填写 allinone_format 反向代理域名">
+                    </v-text-field>
+                </v-card-text>
+            </v-card>
+
             <!-- 保存按钮 -->
             <v-card>
                 <v-card-text class="text-center">
@@ -124,7 +145,7 @@ export default {
             required: true
         }
     },
-    emits: ['back', 'show-message'],
+    emits: ['show-message', 'switch-component'],
     setup(props, { emit }) {
         const saving = ref(false)
         const drag = ref(false)
@@ -132,6 +153,7 @@ export default {
         const showTokenDialog = ref(false)
         const tempUid = ref('')
         const tempToken = ref('')
+        const reverseProxyDomain = ref('');
 
         const saveUid = () => {
             props.config.migu_uid = tempUid.value
@@ -152,14 +174,32 @@ export default {
             if (val) tempToken.value = props.config.migu_token
         })
 
+        // 反向代理域名验证规则
+        const reverseProxyDomainRules = [
+            v => !v || /^https?:\/\//.test(v) || '必须是 http 或 https 协议',
+            v => !/\?/.test(v) || '不能带 ?xx=xx 参数',
+            v => !/\/$/.test(v) || '不能以 / 结尾'
+        ]
         // 验证基础配置
         const validateConfig = () => {
             // 验证是否启用了至少一种直播源类型
             if (!Object.values(props.config.link_type).some(enabled => enabled)) {
-                throw new Error('至少需要启用一种直播源类型')
+                throw new Error('至少需要启用一种直播源类型');
+            }
+
+            // 判断 reverseProxyDomainRules 是否通过
+            if (props.config.reverse_proxy_domain) { // 只有在 reverse_proxy_domain 不为空时才进行验证
+                const reverseProxyErrors = reverseProxyDomainRules
+                    .map(rule => rule(props.config.reverse_proxy_domain))
+                    .filter(result => result !== true); // 只保留错误消息
+
+                if (reverseProxyErrors.length > 0) {
+                    throw new Error('反向代理域名格式错误:\n' + reverseProxyErrors.join('\n')); // 抛出所有错误消息
+                }
             }
         }
 
+        // 直播源类型排序
         const linkTypeKeys = computed({
             get: () => Object.keys(props.config.link_type),
             set: (newOrder) => {
@@ -184,7 +224,8 @@ export default {
                     migu_token: props.config.migu_token,
                     link_output_jump: props.config.link_output_jump,
                     link_output_desc: props.config.link_output_desc,
-                    link_type: props.config.link_type
+                    link_type: props.config.link_type,
+                    reverse_proxy_domain: props.config.reverse_proxy_domain
                 }
                 await updateConfig(configToSave)
                 emit('show-message', '配置保存成功', 'success')
@@ -194,6 +235,10 @@ export default {
                 saving.value = false
             }
         }
+
+        const switchComponent = (componentName) => {
+            emit('switch-component', componentName);
+        };
 
         return {
             saving,
@@ -205,7 +250,9 @@ export default {
             tempToken,
             saveUid,
             saveToken,
-            save
+            reverseProxyDomainRules,
+            save,
+            switchComponent
         }
     }
 }

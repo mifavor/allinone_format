@@ -50,6 +50,7 @@ class ConfigManager
     // 默认配置
     private $defaultConfig = [
         'tv_m3u_url' => '',
+        'reverse_proxy_domain' => '', // allinone_format 反向代理域名
         'fetch_tptv' => true, // 是否抓取 tptv.m3u
         'fetch_migu' => true, // 是否抓取 migu.m3u
         'migu_uid' => '', // 咪咕 uid
@@ -207,6 +208,21 @@ class ConfigManager
                     $result['error'] = "{$field} 不能使用本服务的端口(35456)";
                 } else {
                     $result['value'] = $config[$field];
+                }
+                break;
+
+            case 'reverse_proxy_domain':
+                if (!empty($config[$field])) {
+                    // 反向代理不为空的时候需要检查是否是域名格式 https?://域名[:端口][/path]
+                    if (
+                        !filter_var($config[$field], FILTER_VALIDATE_URL)
+                        || filter_var($config[$field], FILTER_VALIDATE_URL, FILTER_FLAG_QUERY_REQUIRED)
+                        || substr($config[$field], -1) === '/'
+                    ) {
+                        $result['error'] = "{$field} 请输入有效的 https?://域名[:端口][/path] 格式";
+                    } else {
+                        $result['value'] = $config[$field];
+                    }
                 }
                 break;
 

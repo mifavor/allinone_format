@@ -124,19 +124,27 @@ class OutputManager
     private function generateJumpLink($link, $type, $desc)
     {
         $newDesc = '';
+        $config = $this->configManager->getConfig();
         // 判断 config 中 link_output_desc 是否为 true
-        if ($this->configManager->getConfig()['link_output_desc']) {
+        if ($config['link_output_desc']) {
             if (!empty($type)) {
                 $newDesc = '$' . $type . ($desc ? '-' . $desc : '');
             }
         }
 
         // 判断 config 中 link_output_jump 是否为 true
-        if (!$this->configManager->getConfig()['link_output_jump']) {
+        if (!$config['link_output_jump']) {
             return $link . $newDesc;
         }
 
-        return $this->httpManager->getBaseUrl() . '/jump?url=' . urlencode($link) . $newDesc;
+        // 如果 config 中 reverse_proxy_domain 不为空, 则使用反向代理域名
+        if ($config['reverse_proxy_domain']) {
+            $base_url = $config['reverse_proxy_domain'];
+        } else {
+            $base_url = $this->httpManager->getBaseUrl();
+        }
+
+        return $base_url . '/jump?url=' . urlencode($link) . $newDesc;
     }
 
     public function debugM3uData($params)

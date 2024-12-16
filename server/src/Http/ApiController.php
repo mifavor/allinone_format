@@ -62,8 +62,6 @@ class ApiController
     public function getChannelUrls()
     {
         try {
-            $baseUrl = $this->httpManager->getBaseUrl();
-
             // 定义支持的格式
             $formats = [
                 '/m3u/1' => 'm3u 聚合格式 1 适合 天光云影v3.x',
@@ -79,10 +77,15 @@ class ApiController
             $urls = [];
 
             foreach ($formats as $path => $description) {
-                $urls[] = ['url' => $baseUrl . $path, 'desc' => $description];
+                $urls[] = ['url' => $path, 'desc' => $description];
             }
 
-            $this->sendJsonResponse($urls);
+            $result = [
+                'urls' => $urls,
+                'base_url' => $this->httpManager->getBaseUrl()
+            ];
+
+            $this->sendJsonResponse($result);
         } catch (\Exception $e) {
             $this->logger->error('Get API formats failed: ' . $e->getMessage());
             $this->sendJsonResponse(['error' => $e->getMessage()], 500);

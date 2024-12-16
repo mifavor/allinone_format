@@ -1,6 +1,6 @@
 <template>
     <div>
-        <app-header title="分组配置" :show-back="true" @back="$router.push('/')" />
+        <app-header title="分组配置" :show-back="true" @back="switchComponent('MainConfigPage')" />
 
         <v-container>
             <!-- 频道分组映射 -->
@@ -169,7 +169,7 @@ export default {
             required: true
         }
     },
-    emits: ['back', 'show-message'],
+    emits: ['show-message', 'switch-component'],
     setup(props, { emit }) {
         const saving = ref(false)
         const drag = ref(false)
@@ -315,6 +315,10 @@ export default {
             }
         }
 
+        const switchComponent = (componentName) => {
+            emit('switch-component', componentName);
+        };
+
         return {
             saving,
             drag,
@@ -331,7 +335,8 @@ export default {
             startEdit,
             finishEdit,
             cancelEdit,
-            save
+            save,
+            switchComponent
         }
     }
 }
