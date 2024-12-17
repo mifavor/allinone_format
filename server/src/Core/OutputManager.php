@@ -123,6 +123,10 @@ class OutputManager
 
     private function generateJumpLink($link, $type, $desc)
     {
+        // 如果 type 和 desc 都为空，则直接返回 link
+        if (empty($type) && empty($desc)) {
+            return $link;
+        }
         $newDesc = '';
         $config = $this->configManager->getConfig();
         // 判断 config 中 link_output_desc 是否为 true
@@ -209,7 +213,7 @@ class OutputManager
                                     if (isset($urlInfo['link'])) {
                                         $desc = isset($urlInfo['desc']) && !empty($urlInfo['desc']) ? '-' . $urlInfo['desc'] : '';
                                         $output .= "#EXTINF:-1 tvg-id=\"{$id}\" tvg-name=\"{$id}\" tvg-logo=\"{$logo}\" group-title=\"{$group}\",{$name}{$desc}\n";
-                                        $output .= $this->generateJumpLink($urlInfo['link'], null, null) . "\n";
+                                        $output .= $urlInfo['link'] . "\n";
                                     }
                                 }
                                 break;
@@ -270,7 +274,7 @@ class OutputManager
                                 foreach ($channel['urls'] as $urlInfo) {
                                     if (isset($urlInfo['link'])) {
                                         $desc = isset($urlInfo['desc']) && !empty($urlInfo['desc']) ? '-' . $urlInfo['desc'] : '';
-                                        $output .= $name . $desc . "," . $this->generateJumpLink($urlInfo['link'], null, null) . "\n";
+                                        $output .= $name . $desc . "," . $urlInfo['link'] . "\n";
                                     }
                                 }
                                 break;
