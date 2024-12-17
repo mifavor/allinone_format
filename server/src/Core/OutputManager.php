@@ -207,7 +207,7 @@ class OutputManager
                                     if (isset($urlInfo['link'])) {
                                         $desc = isset($urlInfo['desc']) && !empty($urlInfo['desc']) ? '-' . $urlInfo['desc'] : '';
                                         $output .= "#EXTINF:-1 tvg-id=\"{$id}\" tvg-name=\"{$id}\" tvg-logo=\"{$logo}\" group-title=\"{$group}\",{$name}{$desc}\n";
-                                        $output .= $this->generateJumpLink($urlInfo['link'], $urlInfo['type'], $urlInfo['desc']) . "\n";
+                                        $output .= $this->generateJumpLink($urlInfo['link'], null, null) . "\n";
                                     }
                                 }
                                 break;
