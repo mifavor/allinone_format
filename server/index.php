@@ -28,14 +28,7 @@ $query = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
 $router = new Http\RouterController();
 $result = $router->dispatch($method, $path, $query);
 
-// 如果路由处理返回 false，则尝试处理静态文件
+// 路由无法匹配，返回 false 交由 php -S 处理静态文件
 if ($result === false) {
-    if ($path === '/') {
-        $file = __DIR__ . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'index.html';
-        header('Content-Type: text/html');
-        header('Content-Length: ' . filesize($file));
-        readfile($file);
-    } else {
-        return false;
-    }
+    return false;
 }
