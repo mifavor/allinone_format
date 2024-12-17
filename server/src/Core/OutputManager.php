@@ -130,6 +130,8 @@ class OutputManager
             if (!empty($type)) {
                 $newDesc = '$' . $type . ($desc ? '-' . $desc : '');
             }
+        } else { // 不开启 link_output_desc 的时候，jump 就没有意义，直接返回 link
+            return $link;
         }
 
         // 判断 config 中 link_output_jump 是否为 true
