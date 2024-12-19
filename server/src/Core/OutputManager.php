@@ -95,7 +95,9 @@ class OutputManager
                 $miguUrl = str_replace('tv.m3u', 'migu.m3u', $url);
                 // 如果 config 中 migu_uid 和 migu_token 不为空, 则 ?userid=你的userid&usertoken=
                 if ($this->configManager->getConfig()['migu_uid'] && $this->configManager->getConfig()['migu_token']) {
-                    $miguUrl .= '?userid=' . $this->configManager->getConfig()['migu_uid'] . '&usertoken=' . $this->configManager->getConfig()['migu_token'];
+                    // 如果 $miguUrl 中已经存在 ? 参数，则用 & 拼接
+                    $miguUrl .= strpos($miguUrl, '?') !== false ? '&' : '?';
+                    $miguUrl .= 'userid=' . $this->configManager->getConfig()['migu_uid'] . '&usertoken=' . $this->configManager->getConfig()['migu_token'];
                 }
                 $content = $this->httpManager->fetchContent($miguUrl);
                 if (!$content) {
