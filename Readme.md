@@ -69,9 +69,18 @@ cd server && php -S 0.0.0.0:35456 index.php
 
 ## 更新日志
 ```text
-2024-12-19 23:10:00
-    - 优化 前端静态资源使用相对路径
-    - 优化 前端 api 请求使用相对路径
+2024-12-20 00:36:21
+    - 全面兼容反向代理
+    - 现在可以直接跟 allinone 使用同一个反代域名，
+    - allinone_format 放在 nginx location /path/ 路径下进行反代即可。
+    - 比如：
+    - allinone 反代：http://内网ip:35455/tv.m3u?url=https://test.com
+    - allinone_format 反代域名设置：https://test.com/path
+    - allinone_format 反代 配置页面：https://test.com/path/
+    - allinone_format 反代 订阅链接：https://test.com/path/m3u/1
+    - 优化1 前端静态资源使用相对路径
+    - 优化2 前端 api 请求使用相对路径
+    - 优化3 后端路由支持模糊匹配
 
 2024-12-17 19:47:07
     - 更改 输出格式 3 时，不进行jump也不带备注

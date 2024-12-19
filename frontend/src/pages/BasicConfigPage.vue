@@ -109,7 +109,8 @@
                         1、必须是 http 或 https 协议<br>
                         2、不能带 ?xx=xx 参数<br>
                         3、不能以 / 结尾, 如果是 / 结束的请删除最后的 /<br>
-                        4、如果带 /path 那需要在 nginx 转发的时候动态删除
+                        4、支持带 /path 的反向代理域名, nginx location /path/ 转发到 allinone_format 即可。<br>
+                        比如: https://test.com/path
                     </div>
                     <v-text-field ref="reverseProxyDomainField" v-model="config.reverse_proxy_domain"
                         placeholder="eg: https?://域名[:端口][/path]" variant="outlined" :rules="reverseProxyDomainRules"
