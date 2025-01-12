@@ -17,12 +17,10 @@
 ##########################
 
 # docker 运行方式
-
-# 将 /path/to/config/ 改为你的配置文件存放目录
-docker run -d --restart=unless-stopped --pull=always -v /path/to/config:/app/config -p 35456:35456 --name allinone_format yuexuangu/allinone_format:latest
+docker run -d --restart=unless-stopped --pull=always -v /etc/allinone_format:/app/config -p 35456:35456 --name allinone_format yuexuangu/allinone_format:latest
 
 # openwrt 等系统可能需要 --net=host 网络的，请使用以下命令：
-docker run -d --restart=unless-stopped --pull=always --net=host -v /path/to/config:/app/config --name allinone_format yuexuangu/allinone_format:latest
+docker run -d --restart=unless-stopped --pull=always --net=host -v /etc/allinone_format:/app/config --name allinone_format yuexuangu/allinone_format:latest
 
 ##########################
 #                        #
@@ -40,7 +38,7 @@ services:
     ports:
       - 35456:35456
     volumes:
-      - /path/to/config:/app/config # 请将 /path/to/config/ 改为你的配置文件存放目录
+      - /etc/allinone_format:/app/config
 
 ##########################
 #                        #
