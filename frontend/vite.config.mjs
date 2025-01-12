@@ -21,10 +21,9 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^(/.*)?/api': {
+            '/api': {
                 target: 'http://localhost:35456',
-                changeOrigin: true,
-                rewrite: (path) => path.replace(/^.*\/api/, '/api')
+                changeOrigin: true
             }
         }
     },
@@ -32,6 +31,5 @@ export default defineConfig({
         assetsDir: 'assets',
         emptyOutDir: true,
         outDir: 'dist'
-    },
-    base: './'
+    }
 }) 

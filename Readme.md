@@ -49,7 +49,7 @@ services:
 # 前端
 cd frontend && npm install && npm run dev
 # 后端
-cd server && php -S 0.0.0.0:35456 index.php
+cd server && php -S 127.0.0.1:35456 -t public index.php
 
 ```
 
@@ -67,6 +67,10 @@ cd server && php -S 0.0.0.0:35456 index.php
 
 ## 更新日志
 ```text
+2025-1-12 14:36:39
+    - 新增 支持 rptv 频道
+    - 去除 反代模糊匹配 location /path/ , 需要 nginx 重写路径 rewrite ^/path/(.*)$ /$1 break;
+
 2024-12-20 00:36:21
     - 全面兼容反向代理
     - 现在可以直接跟 allinone 使用同一个反代域名，

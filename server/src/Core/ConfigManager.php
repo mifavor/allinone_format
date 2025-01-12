@@ -39,6 +39,7 @@ class ConfigManager
         'ysptp',
         'gaoma',
         'itv',
+        'rptv',
         'tptv',
         'migu',
         'slive',
@@ -51,7 +52,7 @@ class ConfigManager
     private $defaultConfig = [
         'tv_m3u_url' => '',
         'reverse_proxy_domain' => '', // allinone_format 反向代理域名
-        'fetch_tptv' => true, // 是否抓取 tptv.m3u
+        'fetch_tptv' => false, // 是否抓取 tptv.m3u
         'fetch_migu' => true, // 是否抓取 migu.m3u
         'migu_uid' => '', // 咪咕 uid
         'migu_token' => '', // 咪咕 token
@@ -61,6 +62,7 @@ class ConfigManager
             'ysptp' => true,      // 央视频道
             'gaoma' => true,      // 高码频道
             'itv' => true,        // itv 频道
+            'rptv' => true,        // rptv 频道
             'tptv' => true,       // tptv 频道
             'migu' => true,       // 咪咕频道
             'slive' => true,      // 直播频道

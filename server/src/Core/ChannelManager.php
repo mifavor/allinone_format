@@ -270,6 +270,8 @@ class ChannelManager
     {
         $config = $this->configManager->getConfig();
         foreach ($config['link_type'] as $linkType => $enabled) {
+            // $link 判断 ? 前面的部分是否包含 $linkType
+            $link = explode('?', $link)[0];
             if (strpos($link, $linkType) !== false) {
                 return $linkType;
             }

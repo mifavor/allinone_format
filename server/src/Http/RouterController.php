@@ -22,10 +22,10 @@ class RouterController
         ];
 
         // 注册 M3U 和 TXT 路由
-        $this->routes['#/m3u(/\d+)?/?$#'] = [
+        $this->routes['#^/m3u(/\d+)?/?$#'] = [
             'GET' => [HttpController::class, 'm3u']
         ];
-        $this->routes['#/txt(/\d+)?/?$#'] = [
+        $this->routes['#^/txt(/\d+)?/?$#'] = [
             'GET' => [HttpController::class, 'txt']
         ];
 
@@ -42,27 +42,23 @@ class RouterController
 
     public function dispatch($method, $path, $query)
     {
+        // 使用 LogManager 记录日志 方法 路径 参数
         $this->logger->info($method . ' ' . $path . ($query ? '?' . $query : ''));
+        // 检查精确匹配的路由
+        if (isset($this->routes[$path][$method])) {
+            [$class, $action] = $this->routes[$path][$method];
+            $controller = new $class();
+            return $controller->$action();
+        }
 
-        // 修改精确匹配为模糊匹配
-        foreach ($this->routes as $routePath => $handlers) {
-            // 如果是正则表达式路由，使用 preg_match
-            if ($routePath[0] === '#') {
-                if (preg_match($routePath, $path, $matches)) {
-                    if (isset($handlers[$method])) {
-                        [$class, $action] = $handlers[$method];
-                        $controller = new $class();
-                        $format = isset($matches[1]) ? trim($matches[1], '/') : '1';
-                        return $controller->$action($format, $_GET);
-                    }
-                }
-            }
-            // 否则使用字符串模糊匹配
-            else if (strpos($path, $routePath) !== false) {
+        // 检查正则匹配的路由
+        foreach ($this->routes as $pattern => $handlers) {
+            if ($pattern[0] === '#' && preg_match($pattern, $path, $matches)) {
                 if (isset($handlers[$method])) {
                     [$class, $action] = $handlers[$method];
                     $controller = new $class();
-                    return $controller->$action();
+                    $format = isset($matches[1]) ? trim($matches[1], '/') : '1';
+                    return $controller->$action($format, $_GET);
                 }
             }
         }
