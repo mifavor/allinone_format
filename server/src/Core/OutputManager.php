@@ -64,11 +64,11 @@ class OutputManager
                 $tptvUrl = str_replace('tv.m3u', 'tptv.m3u', $url);
                 $content = $this->httpManager->fetchContent($tptvUrl);
                 if (!$content) {
-                    $this->logger->error('获取tptv.m3u内容失败 url: ' . $url);
+                    $this->logger->error('获取tptv.m3u内容失败 tptvUrl: ' . $tptvUrl);
                 } else {
                     $m3uDataTptv = $this->m3uParser->parse($content);
                     if (!$m3uDataTptv) {
-                        $this->logger->error('tptv.m3u内容解析失败 url: ' . $url);
+                        $this->logger->error('tptv.m3u内容解析失败 tptvUrl: ' . $tptvUrl);
                     } else {
                         // $this->logger->debug("tptv.m3u解析完成");
                         // $this->logger->debug(json_encode($m3uDataTptv, JSON_UNESCAPED_UNICODE));
@@ -101,11 +101,11 @@ class OutputManager
                 }
                 $content = $this->httpManager->fetchContent($miguUrl);
                 if (!$content) {
-                    $this->logger->error('获取migu.m3u内容失败 url: ' . $url);
+                    $this->logger->error('获取migu.m3u内容失败 miguUrl: ' . $miguUrl);
                 } else {
                     $m3uDataMigu = $this->m3uParser->parse($content);
                     if (!$m3uDataMigu) {
-                        $this->logger->error('migu.m3u内容解析失败 url: ' . $url);
+                        $this->logger->error('migu.m3u内容解析失败 miguUrl: ' . $miguUrl);
                     } else {
                         // $this->logger->debug("migu.m3u解析完成");
                         // $this->logger->debug(json_encode($m3uDataMigu, JSON_UNESCAPED_UNICODE));

@@ -5,7 +5,7 @@ namespace Core;
 class M3uParser
 {
     private $logger;
-    private $pattern = '/#EXTINF:(.+?)[,\s]+tvg-id="([^"]+)"\s+tvg-name="[^"]+"\s+tvg-logo="([^"]+)"\s+group-title="([^"]+)",(.*)[\r\n]+((https?|rtmp):\/\/.*)[\r\n]+/';
+    private $pattern = '/#EXTINF:(.+?)[,\s]+(?:tvg-id="([^"]+)"\s+)?(?:tvg-name="[^"]+"\s+)?tvg-logo="([^"]+)"\s+group-title="([^"]+)",(.*)[\r\n]+((https?|rtmp):\/\/.*)[\r\n]+/';
 
     public function __construct()
     {
@@ -30,7 +30,7 @@ class M3uParser
             foreach ($matches as $match) {
                 $result[] = [
                     'inf' => trim($match[1]),
-                    'id' => trim($match[2]),
+                    'id' => trim($match[2]) ?: trim($match[5]),
                     'logo' => trim($match[3]),
                     'group' => trim($match[4]),
                     'desc' => trim($match[5]),
