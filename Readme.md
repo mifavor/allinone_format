@@ -4,6 +4,11 @@
 ## 前置项目
 请先安装此项目 [youshandefeiyang/allinone](https://hub.docker.com/r/youshandefeiyang/allinone)
 
+## 多直播源合并工具
+- 如果你需要将多个直播源或者huya、douyu 啥的合并到一起，那就用这个项目
+- [https://github.com/taksssss/EPG-Server](https://github.com/taksssss/EPG-Server)
+- [https://hub.docker.com/r/taksss/php-epg](https://hub.docker.com/r/taksss/php-epg)
+
 ## 项目源码
 [allinone_format](https://github.com/FanchangWang/allinone_format)
 
