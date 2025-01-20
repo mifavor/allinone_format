@@ -41,6 +41,7 @@ class HttpManager
             if ($httpCode === 200 && $content) {
                 return $content;
             }
+            $this->logger->error('Http request failed with code: ' . $httpCode);
             return false;
         } catch (\Exception $e) {
             $this->logger->error('Fetch content failed: ' . $e->getMessage());
